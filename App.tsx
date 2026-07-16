@@ -7,6 +7,7 @@ import { View } from 'react-native';
 import { useAppFonts } from './src/theme/fonts';
 import { colors } from './src/theme';
 import HomeScreen from './src/screens/HomeScreen';
+import CatalogScreen from './src/screens/CatalogScreen';
 import ProductScreen from './src/screens/ProductScreen';
 import PlaceholderScreen from './src/screens/PlaceholderScreen';
 
@@ -27,7 +28,7 @@ export default function App() {
       <StatusBar style="dark" />
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="Catalog" component={PlaceholderScreen} />
+        <Stack.Screen name="Catalog" component={CatalogScreen} />
         <Stack.Screen name="Product" component={ProductScreen} />
         <Stack.Screen name="ProIntro" component={PlaceholderScreen} />
         <Stack.Screen name="ProProduct" component={PlaceholderScreen} />
