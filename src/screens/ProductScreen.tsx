@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { colors, radius, spacing, fonts } from '../theme';
 import { products, formatsFor, fmtGourdes } from '../data/products';
+import { useCart } from '../context/CartContext';
 
 // Traduit de la section showProduct du prototype web (markup l.454-496,
 // logique prod/formats/qty/addSelected l.1063-1073 & 1235-1245).
@@ -20,6 +21,7 @@ export default function ProductScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const insets = useSafeAreaInsets();
+  const { addItem } = useCart();
 
   // products.find(x => x.id === S.pid) || products[0]
   const product = products.find((p) => p.id === route.params?.pid) ?? products[0];
@@ -32,11 +34,19 @@ export default function ProductScreen() {
   const f = fmts[fmtIdx] ?? fmts[0];
   const unitPrice = product.price * f.mult * f.disc;
 
-  // « Ajoute nan panyen » : panier différé (pas d'état global pour l'instant).
-  // Feedback visuel « ✓ » — la navigation vers le panier arrivera avec son écran.
+  // « Ajoute nan panyen » : ajoute au panier puis va au panier (comme le prototype).
   const onAdd = () => {
+    addItem({
+      key: `${product.id}:${fmtIdx}`,
+      name: product.name,
+      sub: `${f.label} · ${f.sub}`,
+      image: product.image,
+      tint: product.tint,
+      price: unitPrice,
+      qty,
+    });
     setAdded(true);
-    setTimeout(() => setAdded(false), 1400);
+    setTimeout(() => navigation.navigate('Cart'), 350);
   };
 
   return (

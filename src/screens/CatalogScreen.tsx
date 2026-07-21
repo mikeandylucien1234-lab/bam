@@ -6,6 +6,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { colors, radius, spacing, fonts } from '../theme';
 import BottomNav, { BOTTOM_NAV_SPACE } from '../components/BottomNav';
 import { products, fmtGourdes, type Product } from '../data/products';
+import { useCart } from '../context/CartContext';
 
 // Redesign « Scoops » (layout épuré) — contenu & palette BAM conservés.
 // Traduit de la section showCatalog du prototype (catalogProducts + catChips).
@@ -36,8 +37,11 @@ export default function CatalogScreen() {
       <ScrollView contentContainerStyle={{ paddingBottom: BOTTOM_NAV_SPACE }} showsVerticalScrollIndicator={false}>
         {/* Hero */}
         <View style={styles.hero}>
-          <Text style={styles.eyebrow}>ACHTE BAM</Text>
-          <Text style={styles.title}>Sa w vle{'\n'}manje jodi a?</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.eyebrow}>ACHTE BAM</Text>
+            <Text style={styles.title}>Sa w vle{'\n'}manje jodi a?</Text>
+          </View>
+          <CartButton onPress={() => navigation.navigate('Cart')} />
         </View>
 
         {/* Chips catégories */}
@@ -81,10 +85,26 @@ export default function CatalogScreen() {
   );
 }
 
+function CartButton({ onPress }: { onPress: () => void }) {
+  const { count } = useCart();
+  return (
+    <Pressable style={styles.cartBtn} onPress={onPress} hitSlop={8}>
+      <Ionicons name="bag-handle-outline" size={20} color={colors.ink} />
+      {count > 0 && (
+        <View style={styles.cartBadge}>
+          <Text style={styles.cartBadgeText}>{count}</Text>
+        </View>
+      )}
+    </Pressable>
+  );
+}
+
 function ProductCard({ product, onOpen }: { product: Product; onOpen: () => void }) {
+  const { addItem } = useCart();
   const [added, setAdded] = useState(false);
   const onAdd = (e: any) => {
     e?.stopPropagation?.();
+    addItem({ key: `${product.id}:0`, name: product.name, sub: product.sub, image: product.image, tint: product.tint, price: product.price });
     setAdded(true);
     setTimeout(() => setAdded(false), 1100);
   };
@@ -109,8 +129,19 @@ function ProductCard({ product, onOpen }: { product: Product; onOpen: () => void
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.cream },
 
-  hero: { paddingHorizontal: spacing.lg, paddingTop: spacing.md },
+  hero: { flexDirection: 'row', alignItems: 'flex-start', paddingHorizontal: spacing.lg, paddingTop: spacing.md },
   eyebrow: { fontFamily: fonts.bodyBold, fontSize: 11.5, letterSpacing: 1.5, color: colors.red, marginBottom: 6 },
+  cartBtn: {
+    width: 44, height: 44, borderRadius: 22, backgroundColor: colors.white,
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 10, elevation: 2,
+  },
+  cartBadge: {
+    position: 'absolute', top: -3, right: -3, minWidth: 18, height: 18, borderRadius: 9,
+    backgroundColor: colors.red, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4,
+    borderWidth: 2, borderColor: colors.cream,
+  },
+  cartBadgeText: { fontFamily: fonts.bodyBold, fontSize: 10, color: colors.white },
   title: { fontFamily: fonts.display, fontSize: 30, color: colors.ink, lineHeight: 34 },
 
   chipsRow: { flexDirection: 'row', gap: spacing.xs, paddingHorizontal: spacing.lg, paddingTop: spacing.lg, paddingBottom: 4 },

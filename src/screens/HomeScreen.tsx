@@ -7,6 +7,7 @@ import { useNavigation } from '@react-navigation/native';
 import { colors, radius, spacing, fonts } from '../theme';
 import BottomNav, { BOTTOM_NAV_SPACE } from '../components/BottomNav';
 import { products, fmtGourdes, type Product } from '../data/products';
+import { useCart } from '../context/CartContext';
 
 // Redesign « Scoops » (layout épuré, aéré) — contenu krèyol & palette BAM
 // conservés. Repris de showHomeRetail du prototype, réagencé.
@@ -33,6 +34,7 @@ const CATS = [
 
 export default function HomeScreen() {
   const navigation = useNavigation<any>();
+  const { count } = useCart();
   const popular = products.filter((p) => p.cat === 'Jus').slice(0, 3);
 
   return (
@@ -48,9 +50,13 @@ export default function HomeScreen() {
             <Text style={styles.locationText}>Pòtoprens</Text>
             <Ionicons name="chevron-down" size={13} color={MUTED} />
           </Pressable>
-          <Pressable style={styles.bell}>
-            <Ionicons name="notifications-outline" size={21} color={colors.ink} />
-            <View style={styles.bellDot} />
+          <Pressable style={styles.cartBtn} onPress={() => navigation.navigate('Cart')} hitSlop={6}>
+            <Ionicons name="bag-handle-outline" size={20} color={colors.ink} />
+            {count > 0 && (
+              <View style={styles.cartBadge}>
+                <Text style={styles.cartBadgeText}>{count}</Text>
+              </View>
+            )}
           </Pressable>
         </View>
 
@@ -114,6 +120,18 @@ export default function HomeScreen() {
           </View>
         </Pressable>
 
+        {/* Offre de lancement */}
+        <Pressable style={styles.promo} onPress={() => navigation.navigate('Catalog')}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.promoEyebrow}>ÒF LANSMAN</Text>
+            <Text style={styles.promoTitle}>−15% sou premye{'\n'}kòmann ou</Text>
+          </View>
+          <View style={styles.promoBtn}>
+            <Text style={styles.promoBtnText}>Kòmande</Text>
+            <Ionicons name="arrow-forward" size={14} color={colors.ink} />
+          </View>
+        </Pressable>
+
         {/* Popilè */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle2}>Popilè</Text>
@@ -143,9 +161,11 @@ export default function HomeScreen() {
 }
 
 function PopularCard({ product, onOpen }: { product: Product; onOpen: () => void }) {
+  const { addItem } = useCart();
   const [added, setAdded] = useState(false);
   const onAdd = (e: any) => {
     e?.stopPropagation?.();
+    addItem({ key: `${product.id}:0`, name: product.name, sub: product.sub, image: product.image, tint: product.tint, price: product.price });
     setAdded(true);
     setTimeout(() => setAdded(false), 1100);
   };
@@ -208,18 +228,17 @@ const styles = StyleSheet.create({
   logoText: { fontFamily: fonts.displayBold, fontSize: 14, color: colors.white },
   location: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   locationText: { fontFamily: fonts.bodyBold, fontSize: 14.5, color: colors.ink },
-  bell: { width: 24, height: 24, alignItems: 'center', justifyContent: 'center' },
-  bellDot: {
-    position: 'absolute',
-    top: -1,
-    right: -1,
-    width: 9,
-    height: 9,
-    borderRadius: 4.5,
-    backgroundColor: colors.red,
-    borderWidth: 2,
-    borderColor: colors.cream,
+  cartBtn: {
+    width: 40, height: 40, borderRadius: 20, backgroundColor: colors.white,
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 10, elevation: 2,
   },
+  cartBadge: {
+    position: 'absolute', top: -3, right: -3, minWidth: 18, height: 18, borderRadius: 9,
+    backgroundColor: colors.red, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4,
+    borderWidth: 2, borderColor: colors.cream,
+  },
+  cartBadgeText: { fontFamily: fonts.bodyBold, fontSize: 10, color: colors.white },
 
   hero: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg },
   eyebrow: { fontFamily: fonts.bodyBold, fontSize: 12, letterSpacing: 1, color: MUTED, marginBottom: 6 },
@@ -325,6 +344,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+
+  promo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    backgroundColor: colors.ink,
+    borderRadius: radius.lg,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.xl,
+    padding: 18,
+  },
+  promoEyebrow: { fontFamily: fonts.bodyBold, fontSize: 10.5, letterSpacing: 1.2, color: colors.mango, marginBottom: 5 },
+  promoTitle: { fontFamily: fonts.display, fontSize: 20, color: colors.cream, lineHeight: 24 },
+  promoBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: colors.red, borderRadius: radius.pill, paddingHorizontal: 14, paddingVertical: 10,
+  },
+  promoBtnText: { fontFamily: fonts.bodyBold, fontSize: 12.5, color: colors.ink },
 
   sectionHeader: {
     flexDirection: 'row',

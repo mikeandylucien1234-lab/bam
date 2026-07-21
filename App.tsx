@@ -6,9 +6,15 @@ import { View } from 'react-native';
 
 import { useAppFonts } from './src/theme/fonts';
 import { colors } from './src/theme';
+import { CartProvider } from './src/context/CartContext';
 import HomeScreen from './src/screens/HomeScreen';
 import CatalogScreen from './src/screens/CatalogScreen';
 import ProductScreen from './src/screens/ProductScreen';
+import CartScreen from './src/screens/CartScreen';
+import CheckoutScreen from './src/screens/CheckoutScreen';
+import AccountScreen from './src/screens/AccountScreen';
+import TrackingScreen from './src/screens/TrackingScreen';
+import BamPointsScreen from './src/screens/BamPointsScreen';
 import PlaceholderScreen from './src/screens/PlaceholderScreen';
 
 const Stack = createNativeStackNavigator();
@@ -24,22 +30,24 @@ export default function App() {
   }
 
   return (
-    <NavigationContainer>
-      <StatusBar style="dark" />
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="Catalog" component={CatalogScreen} />
-        <Stack.Screen name="Product" component={ProductScreen} />
-        <Stack.Screen name="ProIntro" component={PlaceholderScreen} />
-        <Stack.Screen name="ProProduct" component={PlaceholderScreen} />
-        <Stack.Screen name="Cart" component={PlaceholderScreen} />
-        <Stack.Screen name="Checkout" component={PlaceholderScreen} />
-        <Stack.Screen name="Account" component={PlaceholderScreen} />
-        <Stack.Screen name="Tracking" component={PlaceholderScreen} />
-        <Stack.Screen name="BamPoints" component={PlaceholderScreen} />
-        <Stack.Screen name="Favorites" component={PlaceholderScreen} />
-        <Stack.Screen name="Orders" component={PlaceholderScreen} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <CartProvider>
+      <NavigationContainer>
+        <StatusBar style="dark" />
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="Catalog" component={CatalogScreen} />
+          <Stack.Screen name="Product" component={ProductScreen} />
+          <Stack.Screen name="Cart" component={CartScreen} />
+          <Stack.Screen name="Checkout" component={CheckoutScreen} />
+          <Stack.Screen name="Account" component={AccountScreen} />
+          <Stack.Screen name="Tracking" component={TrackingScreen} />
+          <Stack.Screen name="BamPoints" component={BamPointsScreen} />
+          <Stack.Screen name="ProIntro" component={PlaceholderScreen} />
+          <Stack.Screen name="ProProduct" component={PlaceholderScreen} />
+          <Stack.Screen name="Favorites" component={PlaceholderScreen} />
+          <Stack.Screen name="Orders" component={PlaceholderScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </CartProvider>
   );
 }
