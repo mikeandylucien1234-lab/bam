@@ -10,11 +10,11 @@ import { products, formatsFor, fmtGourdes } from '../data/products';
 // Traduit de la section showProduct du prototype web (markup l.454-496,
 // logique prod/formats/qty/addSelected l.1063-1073 & 1235-1245).
 // Couleurs spécifiques reprises telles quelles du prototype, comme HomeScreen.
-const BADGE_BORDER = '#DCCCA8';
-const MUTED_BROWN = '#8A7A62';
-const DESC_BROWN = '#6E5F4B';
-const FORMAT_BORDER = '#E8DBBE';
-const STEP_BG = '#F0E2C8';
+const BADGE_BORDER = 'rgba(22,32,26,0.18)';
+const MUTED_BROWN = 'rgba(22,32,26,0.55)';
+const DESC_BROWN = 'rgba(22,32,26,0.62)';
+const FORMAT_BORDER = 'rgba(22,32,26,0.14)';
+const STEP_BG = '#E6E9E1';
 
 export default function ProductScreen() {
   const navigation = useNavigation<any>();

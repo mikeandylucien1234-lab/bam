@@ -10,8 +10,8 @@ import { products, fmtGourdes, type Product } from '../data/products';
 // Redesign « Scoops » (layout épuré) — contenu & palette BAM conservés.
 // Traduit de la section showCatalog du prototype (catalogProducts + catChips).
 const CARD_BG = '#FFFFFF';
-const CHIP_BORDER = '#E8DBBE';
-const SUB_TEXT = '#8A7A62';
+const CHIP_BORDER = 'rgba(22,32,26,0.14)';
+const SUB_TEXT = 'rgba(22,32,26,0.55)';
 
 // « Tout » = aucun filtre — voir products.filter du prototype.
 const CATEGORIES = ['Tout', 'Jus', 'Riz', 'Nouilles'] as const;

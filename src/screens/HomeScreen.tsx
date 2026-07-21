@@ -10,11 +10,11 @@ import { products, fmtGourdes, type Product } from '../data/products';
 
 // Redesign « Scoops » (layout épuré, aéré) — contenu krèyol & palette BAM
 // conservés. Repris de showHomeRetail du prototype, réagencé.
-const PURPLE = '#6E3D63';
-const PURPLE_TEXT = '#E7CFE0';
-const GOLD = '#F5A623';
-const MUTED = '#8A7A62';
-const SEARCH_BG = '#FFFFFF';
+const SWITCH_BG = colors.ink;
+const SWITCH_TEXT = 'rgba(238,240,234,0.72)';
+const GOLD = colors.mango;
+const MUTED = 'rgba(22,32,26,0.5)';
+const SEARCH_BG = colors.white;
 
 // Sur les tuiles pastel des catégories, le fond blanc des PNG se fond dans la
 // teinte via multiply (rendu natif iOS/Android ; non appliqué par react-native-web).
@@ -228,11 +228,11 @@ const styles = StyleSheet.create({
   switchWrap: { alignItems: 'flex-start', paddingHorizontal: spacing.lg, paddingTop: spacing.md },
   switch: {
     flexDirection: 'row',
-    backgroundColor: PURPLE,
+    backgroundColor: SWITCH_BG,
     borderRadius: radius.pill,
     padding: 4,
     gap: 2,
-    shadowColor: PURPLE,
+    shadowColor: SWITCH_BG,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.28,
     shadowRadius: 16,
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
   },
   switchBtn: { paddingHorizontal: 22, paddingVertical: 9, borderRadius: radius.pill },
   switchActive: { backgroundColor: 'transparent' },
-  switchActiveText: { fontFamily: fonts.bodyBold, fontSize: 13.5, color: PURPLE_TEXT },
+  switchActiveText: { fontFamily: fonts.bodyBold, fontSize: 13.5, color: SWITCH_TEXT },
   switchPro: { backgroundColor: GOLD },
   switchProText: { fontFamily: fonts.bodyBold, fontSize: 13.5, color: colors.ink },
 
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 2,
   },
-  searchText: { flex: 1, fontFamily: fonts.bodyRegular, fontSize: 14, color: '#A79781', paddingVertical: 8 },
+  searchText: { flex: 1, fontFamily: fonts.bodyRegular, fontSize: 14, color: colors.textFaint, paddingVertical: 8 },
   searchBtn: {
     width: 38,
     height: 38,

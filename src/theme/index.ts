@@ -1,20 +1,35 @@
-// Design tokens BAM — migrés du prototype web pour rester cohérents
-// entre la démo de vente et l'app réelle.
+// Design tokens BAM — palette « Fresh » : émeraude + neutre clair + ambre.
+// Nommage sémantique (primary/bg/accent…) avec alias rétro-compat pour les
+// écrans qui référencent encore red/cream/mango — un seul point de recolor.
+
+const palette = {
+  ink: '#16201A',        // vert-noir profond (texte, nav, boutons)
+  bg: '#EEF0EA',         // fond neutre clair
+  surface: '#FFFFFF',    // cartes / tuiles
+  primary: '#129E66',    // émeraude — accent, actifs, CTA
+  primaryDark: '#0C7A4E',
+  accent: '#F2A32A',     // ambre — secondaire (BAM Points, Pro)
+  accentDark: '#CE7C0C',
+  success: '#3D7A4E',    // confirmation « ✓ »
+  ink2: '#0B2E7A',       // bleu profond (réserve)
+};
 
 export const colors = {
-  ink: '#1B1310',
-  cream: '#FBF4E8',
-  red: '#C8102E',
-  redDark: '#8C0E27',
-  blue: '#0B2E7A',
-  blueDark: '#132F6E',
-  mango: '#F2A125',
-  mangoDark: '#C9750A',
-  palm: '#3D5A28',
-  white: '#FFFFFF',
-  border: 'rgba(27,19,16,0.10)',
-  textMuted: 'rgba(27,19,16,0.55)',
-  textFaint: 'rgba(27,19,16,0.40)',
+  ...palette,
+  white: palette.surface,
+  border: 'rgba(22,32,26,0.10)',
+  textMuted: 'rgba(22,32,26,0.55)',
+  textFaint: 'rgba(22,32,26,0.42)',
+
+  // Alias rétro-compat (mêmes noms qu'avant → nouvelle palette) :
+  cream: palette.bg,
+  red: palette.primary,
+  redDark: palette.primaryDark,
+  mango: palette.accent,
+  mangoDark: palette.accentDark,
+  palm: palette.success,
+  blue: palette.ink2,
+  blueDark: palette.ink2,
 };
 
 export const radius = {
