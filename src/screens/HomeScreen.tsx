@@ -26,6 +26,12 @@ const imgJuicePassion = require('../../assets/images/imgJuicePassion.png');
 const imgRiceBag = require('../../assets/images/imgRiceBag.png');
 const imgNoodleChicken = require('../../assets/images/imgNoodleChicken.png');
 
+const BRANDS = [
+  { label: 'BAM Juice', cat: 'Jus', image: require('../../assets/images/logoBamJuice.png') },
+  { label: 'BAM Noodles', cat: 'Nouilles', image: require('../../assets/images/logoBamNoodle.png') },
+  { label: 'BAM Rice', cat: 'Riz', image: require('../../assets/images/logoBamRice.png') },
+] as const;
+
 const CATS = [
   { label: 'Nouilles', cat: 'Nouilles', image: imgNoodleCutout, tint: '#FAE7DA' },
   { label: 'Jus', cat: 'Jus', image: imgJuicePassion, tint: '#ECE0F4' },
@@ -47,12 +53,6 @@ export default function HomeScreen() {
     .map((id) => products.find((p) => p.id === id))
     .filter(Boolean) as Product[];
   const flashProduct = products.find((p) => p.id === 'j-cherry')!;
-  // « Mak popilè » : un badge-logo par produit (nom court).
-  const brands = products.map((p) => ({
-    id: p.id,
-    label: p.id === 'riz-25' ? 'Riz Jasmin' : p.id === 'nouille' ? 'Nouilles' : p.name,
-    image: p.image,
-  }));
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
@@ -116,18 +116,18 @@ export default function HomeScreen() {
           ))}
         </View>
 
-        {/* Mak popilè — logos produits */}
+        {/* Mak popilè — logos marques */}
         <Text style={styles.sectionTitle}>Mak popilè n ap ofri</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.brandRow}>
-          {brands.map((b) => (
-            <Pressable key={b.id} style={styles.brand} onPress={() => navigation.navigate('Product', { pid: b.id })}>
+        <View style={styles.brandRow}>
+          {BRANDS.map((b) => (
+            <Pressable key={b.label} style={styles.brand} onPress={() => navigation.navigate('Catalog', { cat: b.cat })}>
               <View style={styles.brandTile}>
                 <Image source={b.image} style={styles.brandImg} resizeMode="contain" />
               </View>
               <Text style={styles.brandLabel} numberOfLines={1}>{b.label}</Text>
             </Pressable>
           ))}
-        </ScrollView>
+        </View>
 
         {/* Catégories */}
         <Text style={styles.sectionTitle}>Kategori</Text>
@@ -430,13 +430,13 @@ const styles = StyleSheet.create({
   flashImg: { width: '78%', height: '86%' },
 
   brandRow: { flexDirection: 'row', gap: spacing.sm, paddingHorizontal: spacing.lg, paddingTop: spacing.md },
-  brand: { alignItems: 'center', gap: 7, width: 96 },
+  brand: { flex: 1, alignItems: 'center', gap: 7 },
   brandTile: {
-    width: 96, height: 84, borderRadius: radius.md, backgroundColor: colors.white,
+    width: '100%', height: 96, borderRadius: radius.md, backgroundColor: colors.white,
     alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 10, elevation: 2,
   },
-  brandImg: { width: '64%', height: '84%' },
+  brandImg: { width: '94%', height: '94%' },
   brandLabel: { fontFamily: fonts.bodyBold, fontSize: 11.5, color: colors.ink },
 
   story: {
