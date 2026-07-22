@@ -6,6 +6,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { colors, radius, spacing, fonts } from '../theme';
 import BottomNav, { BOTTOM_NAV_SPACE } from '../components/BottomNav';
+import DetailProToggle from '../components/DetailProToggle';
 import { products, fmtGourdes, type Product } from '../data/products';
 import { useCart } from '../context/CartContext';
 
@@ -98,16 +99,9 @@ export default function HomeScreen() {
           <Text style={styles.heroTitle}>Sa w vle{'\n'}kòmande jodi a?</Text>
         </View>
 
-        {/* Bascule Détail / Pro */}
+        {/* Bascule Détail / Pro (animée) */}
         <View style={styles.switchWrap}>
-          <View style={styles.switch}>
-            <View style={[styles.switchBtn, styles.switchActive]}>
-              <Text style={styles.switchActiveText}>Détail</Text>
-            </View>
-            <Pressable style={[styles.switchBtn, styles.switchPro]} onPress={() => navigation.navigate('ProIntro')}>
-              <Text style={styles.switchProText}>Pro</Text>
-            </Pressable>
-          </View>
+          <DetailProToggle onPro={() => navigation.navigate('ProIntro')} />
         </View>
 
         {/* Recherche */}

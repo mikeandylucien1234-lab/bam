@@ -15,6 +15,12 @@ import CheckoutScreen from './src/screens/CheckoutScreen';
 import AccountScreen from './src/screens/AccountScreen';
 import TrackingScreen from './src/screens/TrackingScreen';
 import BamPointsScreen from './src/screens/BamPointsScreen';
+import ProIntroScreen from './src/screens/ProIntroScreen';
+import ProOnboardingScreen from './src/screens/ProOnboardingScreen';
+import ProConfirmScreen from './src/screens/ProConfirmScreen';
+import ProLoginScreen from './src/screens/ProLoginScreen';
+import ProHomeScreen from './src/screens/ProHomeScreen';
+import ProProductScreen from './src/screens/ProProductScreen';
 import PlaceholderScreen from './src/screens/PlaceholderScreen';
 
 const Stack = createNativeStackNavigator();
@@ -42,8 +48,12 @@ export default function App() {
           <Stack.Screen name="Account" component={AccountScreen} />
           <Stack.Screen name="Tracking" component={TrackingScreen} />
           <Stack.Screen name="BamPoints" component={BamPointsScreen} />
-          <Stack.Screen name="ProIntro" component={PlaceholderScreen} />
-          <Stack.Screen name="ProProduct" component={PlaceholderScreen} />
+          <Stack.Screen name="ProIntro" component={ProIntroScreen} />
+          <Stack.Screen name="ProOnboarding" component={ProOnboardingScreen} />
+          <Stack.Screen name="ProConfirm" component={ProConfirmScreen} />
+          <Stack.Screen name="ProLogin" component={ProLoginScreen} />
+          <Stack.Screen name="ProHome" component={ProHomeScreen} />
+          <Stack.Screen name="ProProduct" component={ProProductScreen} />
           <Stack.Screen name="Favorites" component={PlaceholderScreen} />
           <Stack.Screen name="Orders" component={PlaceholderScreen} />
         </Stack.Navigator>
