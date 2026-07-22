@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Pressable, Image, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -32,10 +32,21 @@ const CATS = [
   { label: 'Riz & Grenn', cat: 'Riz', image: imgRiceBag, tint: '#FBEBD5' },
 ] as const;
 
+const TRUST = [
+  { icon: 'flash-outline', label: 'Livrezon\n24–48 h' },
+  { icon: 'leaf-outline', label: 'Fèt an\nAyiti' },
+  { icon: 'phone-portrait-outline', label: 'MonCash\n& Kach' },
+] as const;
+
 export default function HomeScreen() {
   const navigation = useNavigation<any>();
   const { count } = useCart();
   const popular = products.filter((p) => p.cat === 'Jus').slice(0, 3);
+  // Meilleures ventes : un mix (riz, nouilles, cerise) pour varier du carrousel jus.
+  const bestSellers = ['riz-25', 'nouille', 'j-cherry']
+    .map((id) => products.find((p) => p.id === id))
+    .filter(Boolean) as Product[];
+  const flashProduct = products.find((p) => p.id === 'j-cherry')!;
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
@@ -87,6 +98,18 @@ export default function HomeScreen() {
           </View>
         </Pressable>
 
+        {/* Bande confiance */}
+        <View style={styles.trustRow}>
+          {TRUST.map((t) => (
+            <View key={t.label} style={styles.trustItem}>
+              <View style={styles.trustIcon}>
+                <Ionicons name={t.icon as any} size={18} color={colors.red} />
+              </View>
+              <Text style={styles.trustLabel}>{t.label}</Text>
+            </View>
+          ))}
+        </View>
+
         {/* Catégories */}
         <Text style={styles.sectionTitle}>Kategori</Text>
         <View style={styles.catRow}>
@@ -99,6 +122,9 @@ export default function HomeScreen() {
             </Pressable>
           ))}
         </View>
+
+        {/* Òf Flash — minuteur en direct */}
+        <FlashDeal product={flashProduct} onOpen={() => navigation.navigate('Product', { pid: flashProduct.id })} />
 
         {/* Bannière BAM Points */}
         <Pressable style={styles.bamPoints} onPress={() => navigation.navigate('BamPoints')}>
@@ -153,6 +179,30 @@ export default function HomeScreen() {
           <FeatureCard label="Nouilles Cup" image={imgNoodleChicken} onOpen={() => navigation.navigate('Product', { pid: 'nouille' })} />
           <FeatureCard label="Riz Jasmin" image={imgRiceBag} onOpen={() => navigation.navigate('Product', { pid: 'riz-25' })} />
         </View>
+
+        {/* Meyè vant */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle2}>Meyè vant</Text>
+          <Pressable onPress={() => navigation.navigate('Catalog')}>
+            <Text style={styles.seeAll}>Wè tout</Text>
+          </Pressable>
+        </View>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.carousel}>
+          {bestSellers.map((p) => (
+            <PopularCard key={p.id} product={p} onOpen={() => navigation.navigate('Product', { pid: p.id })} />
+          ))}
+        </ScrollView>
+
+        {/* Histoire de la marque */}
+        <View style={styles.story}>
+          <View style={styles.storySeal}>
+            <Text style={styles.storySealText}>BAM</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.storyTitle}>Yon mak, yon fyète</Text>
+            <Text style={styles.storySub}>Fonde pa yon antreprenè ayisyen — gou, kalite, ak kominote.</Text>
+          </View>
+        </View>
       </ScrollView>
 
       <BottomNav />
@@ -197,6 +247,49 @@ function FeatureCard({ label, image, onOpen }: { label: string; image: any; onOp
         <View style={styles.featureBtn}>
           <Ionicons name="arrow-forward" size={15} color={colors.cream} />
         </View>
+      </View>
+    </Pressable>
+  );
+}
+
+function TimeBox({ v }: { v: string }) {
+  return (
+    <View style={styles.timeBox}>
+      <Text style={styles.timeText}>{v}</Text>
+    </View>
+  );
+}
+
+function FlashDeal({ product, onOpen }: { product: Product; onOpen: () => void }) {
+  const [left, setLeft] = useState(2 * 3600 + 45 * 60 + 30);
+  useEffect(() => {
+    const t = setInterval(() => setLeft((l) => (l > 0 ? l - 1 : 3 * 3600)), 1000);
+    return () => clearInterval(t);
+  }, []);
+  const hh = String(Math.floor(left / 3600)).padStart(2, '0');
+  const mm = String(Math.floor((left % 3600) / 60)).padStart(2, '0');
+  const ss = String(left % 60).padStart(2, '0');
+  const flashPrice = Math.round(product.price * 0.8);
+
+  return (
+    <Pressable style={styles.flash} onPress={onOpen}>
+      <View style={{ flex: 1 }}>
+        <Text style={styles.flashEyebrow}>ÒF FLASH ⚡</Text>
+        <Text style={styles.flashName}>{product.name}</Text>
+        <View style={styles.flashPriceRow}>
+          <Text style={styles.flashNew}>{fmtGourdes(flashPrice)}</Text>
+          <Text style={styles.flashOld}>{fmtGourdes(product.price)}</Text>
+        </View>
+        <View style={styles.timerRow}>
+          <TimeBox v={hh} />
+          <Text style={styles.colon}>:</Text>
+          <TimeBox v={mm} />
+          <Text style={styles.colon}>:</Text>
+          <TimeBox v={ss} />
+        </View>
+      </View>
+      <View style={styles.flashImgWrap}>
+        <Image source={product.image} style={styles.flashImg} resizeMode="contain" />
       </View>
     </Pressable>
   );
@@ -289,6 +382,44 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+
+  trustRow: { flexDirection: 'row', gap: spacing.sm, paddingHorizontal: spacing.lg, paddingTop: spacing.lg },
+  trustItem: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: colors.white, borderRadius: radius.md, paddingVertical: 11, paddingHorizontal: 12,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 1,
+  },
+  trustIcon: { width: 30, height: 30, borderRadius: 15, backgroundColor: '#E3F0E8', alignItems: 'center', justifyContent: 'center' },
+  trustLabel: { flex: 1, fontFamily: fonts.bodyBold, fontSize: 10.5, color: colors.ink, lineHeight: 13 },
+
+  flash: {
+    flexDirection: 'row', alignItems: 'center', gap: spacing.sm,
+    backgroundColor: colors.ink, borderRadius: radius.lg,
+    marginHorizontal: spacing.lg, marginTop: spacing.xl, padding: 18,
+    overflow: 'hidden',
+  },
+  flashEyebrow: { fontFamily: fonts.bodyBold, fontSize: 11, letterSpacing: 1, color: colors.mango },
+  flashName: { fontFamily: fonts.display, fontSize: 22, color: colors.cream, marginTop: 6 },
+  flashPriceRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, marginTop: 4 },
+  flashNew: { fontFamily: fonts.bodyBold, fontSize: 17, color: colors.red },
+  flashOld: { fontFamily: fonts.bodyRegular, fontSize: 13, color: 'rgba(238,240,234,0.5)', textDecorationLine: 'line-through', marginBottom: 1 },
+  timerRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 12 },
+  timeBox: { backgroundColor: 'rgba(255,255,255,0.14)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 6, minWidth: 34, alignItems: 'center' },
+  timeText: { fontFamily: fonts.bodyBold, fontSize: 15, color: colors.cream },
+  colon: { fontFamily: fonts.bodyBold, fontSize: 15, color: 'rgba(238,240,234,0.6)' },
+  flashImgWrap: { width: 96, height: 118, borderRadius: radius.md, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center' },
+  flashImg: { width: '78%', height: '86%' },
+
+  story: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    backgroundColor: colors.white, borderRadius: radius.lg,
+    marginHorizontal: spacing.lg, marginTop: spacing.xl, padding: 16,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 10, elevation: 2,
+  },
+  storySeal: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.red, alignItems: 'center', justifyContent: 'center' },
+  storySealText: { fontFamily: fonts.displayBold, fontSize: 13, color: colors.white },
+  storyTitle: { fontFamily: fonts.bodyBold, fontSize: 13.5, color: colors.ink },
+  storySub: { fontFamily: fonts.bodyRegular, fontSize: 11.5, color: MUTED, lineHeight: 16, marginTop: 2 },
 
   sectionTitle: {
     fontFamily: fonts.bodyBold,
