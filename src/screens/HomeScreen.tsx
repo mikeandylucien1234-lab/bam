@@ -68,8 +68,6 @@ export default function HomeScreen() {
     .map((id) => products.find((p) => p.id === id))
     .filter(Boolean) as Product[];
   const flashProduct = products.find((p) => p.id === 'j-cherry')!;
-  const packRows: (typeof PACKS[number])[][] = [];
-  for (let i = 0; i < PACKS.length; i += 2) packRows.push(PACKS.slice(i, i + 2) as any);
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
@@ -216,31 +214,27 @@ export default function HomeScreen() {
           <FeatureCard label="Riz Jasmin" image={imgRiceBag} onOpen={() => navigation.navigate('Product', { pid: 'riz-25' })} />
         </View>
 
-        {/* Paks Bam Pou Ou */}
+        {/* Paks Bam Pou Ou — scroll horizontal */}
         <Text style={styles.sectionTitle}>Paks Bam Pou Ou</Text>
-        <View style={styles.packGrid}>
-          {packRows.map((row, ri) => (
-            <View key={ri} style={styles.packRow}>
-              {row.map((p) => (
-                <Pressable
-                  key={p.title}
-                  style={styles.pack}
-                  onPress={() => navigation.navigate('Catalog', p.cat ? { cat: p.cat } : {})}
-                >
-                  <View style={styles.packImg}>
-                    {p.logos.map((l, i) => (
-                      <Image key={i} source={l} style={styles.packLogo} resizeMode="contain" />
-                    ))}
-                  </View>
-                  <View style={styles.packFoot}>
-                    <Text style={styles.packTitle} numberOfLines={2}>{p.title}</Text>
-                    <Ionicons name={p.icon as any} size={17} color={colors.mangoDark} />
-                  </View>
-                </Pressable>
-              ))}
-            </View>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.packRow}>
+          {PACKS.map((p) => (
+            <Pressable
+              key={p.title}
+              style={styles.pack}
+              onPress={() => navigation.navigate('Catalog', p.cat ? { cat: p.cat } : {})}
+            >
+              <View style={styles.packImg}>
+                {p.logos.map((l, i) => (
+                  <Image key={i} source={l} style={styles.packLogo} resizeMode="contain" />
+                ))}
+              </View>
+              <View style={styles.packFoot}>
+                <Text style={styles.packTitle} numberOfLines={2}>{p.title}</Text>
+                <Ionicons name={p.icon as any} size={17} color={colors.mangoDark} />
+              </View>
+            </Pressable>
           ))}
-        </View>
+        </ScrollView>
 
         {/* Meyè vant */}
         <View style={styles.sectionHeader}>
@@ -472,10 +466,9 @@ const styles = StyleSheet.create({
   flashImgWrap: { width: 96, height: 118, borderRadius: radius.md, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center' },
   flashImg: { width: '78%', height: '86%' },
 
-  packGrid: { paddingHorizontal: spacing.lg, paddingTop: spacing.md, gap: spacing.sm },
-  packRow: { flexDirection: 'row', gap: spacing.sm },
+  packRow: { flexDirection: 'row', gap: spacing.sm, paddingHorizontal: spacing.lg, paddingTop: spacing.md },
   pack: {
-    flex: 1, borderRadius: radius.lg, overflow: 'hidden', backgroundColor: colors.white,
+    width: 156, borderRadius: radius.lg, overflow: 'hidden', backgroundColor: colors.white,
     shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.07, shadowRadius: 14, elevation: 3,
   },
   packImg: {
