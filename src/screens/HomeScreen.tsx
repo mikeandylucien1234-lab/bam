@@ -26,10 +26,25 @@ const imgJuicePassion = require('../../assets/images/imgJuicePassion.png');
 const imgRiceBag = require('../../assets/images/imgRiceBag.png');
 const imgNoodleChicken = require('../../assets/images/imgNoodleChicken.png');
 
+const logoJuice = require('../../assets/images/logoBamJuice.png');
+const logoNoodle = require('../../assets/images/logoBamNoodle.png');
+const logoRice = require('../../assets/images/logoBamRice.png');
+
 const BRANDS = [
-  { label: 'BAM Juice', cat: 'Jus', image: require('../../assets/images/logoBamJuice.png') },
-  { label: 'BAM Noodles', cat: 'Nouilles', image: require('../../assets/images/logoBamNoodle.png') },
-  { label: 'BAM Rice', cat: 'Riz', image: require('../../assets/images/logoBamRice.png') },
+  { label: 'BAM Juice', cat: 'Jus', image: logoJuice },
+  { label: 'BAM Noodles', cat: 'Nouilles', image: logoNoodle },
+  { label: 'BAM Rice', cat: 'Riz', image: logoRice },
+] as const;
+
+// Packs / bundles — même structure que la maquette (image + titre + icône).
+const PACK_BG = '#F3A83A';
+const PACKS = [
+  { title: 'Paket Fanmi', icon: 'people', cat: null, logos: [logoRice, logoJuice, logoNoodle] },
+  { title: 'Paket Bwason & Noodle', icon: 'fast-food', cat: null, logos: [logoJuice, logoNoodle] },
+  { title: 'Paket Diri', icon: 'leaf', cat: 'Riz', logos: [logoRice] },
+  { title: 'Paket Juice', icon: 'water', cat: 'Jus', logos: [logoJuice] },
+  { title: 'Paket Noodle', icon: 'restaurant', cat: 'Nouilles', logos: [logoNoodle] },
+  { title: 'Paket Konplè', icon: 'star', cat: null, logos: [logoRice, logoJuice, logoNoodle] },
 ] as const;
 
 const CATS = [
@@ -53,6 +68,8 @@ export default function HomeScreen() {
     .map((id) => products.find((p) => p.id === id))
     .filter(Boolean) as Product[];
   const flashProduct = products.find((p) => p.id === 'j-cherry')!;
+  const packRows: (typeof PACKS[number])[][] = [];
+  for (let i = 0; i < PACKS.length; i += 2) packRows.push(PACKS.slice(i, i + 2) as any);
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
@@ -197,6 +214,32 @@ export default function HomeScreen() {
         <View style={styles.duoRow}>
           <FeatureCard label="Nouilles Cup" image={imgNoodleChicken} onOpen={() => navigation.navigate('Product', { pid: 'nouille' })} />
           <FeatureCard label="Riz Jasmin" image={imgRiceBag} onOpen={() => navigation.navigate('Product', { pid: 'riz-25' })} />
+        </View>
+
+        {/* Paks Bam Pou Ou */}
+        <Text style={styles.sectionTitle}>Paks Bam Pou Ou</Text>
+        <View style={styles.packGrid}>
+          {packRows.map((row, ri) => (
+            <View key={ri} style={styles.packRow}>
+              {row.map((p) => (
+                <Pressable
+                  key={p.title}
+                  style={styles.pack}
+                  onPress={() => navigation.navigate('Catalog', p.cat ? { cat: p.cat } : {})}
+                >
+                  <View style={styles.packImg}>
+                    {p.logos.map((l, i) => (
+                      <Image key={i} source={l} style={styles.packLogo} resizeMode="contain" />
+                    ))}
+                  </View>
+                  <View style={styles.packFoot}>
+                    <Text style={styles.packTitle} numberOfLines={2}>{p.title}</Text>
+                    <Ionicons name={p.icon as any} size={17} color={colors.mangoDark} />
+                  </View>
+                </Pressable>
+              ))}
+            </View>
+          ))}
         </View>
 
         {/* Meyè vant */}
@@ -428,6 +471,20 @@ const styles = StyleSheet.create({
   colon: { fontFamily: fonts.bodyBold, fontSize: 15, color: 'rgba(238,240,234,0.6)' },
   flashImgWrap: { width: 96, height: 118, borderRadius: radius.md, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center' },
   flashImg: { width: '78%', height: '86%' },
+
+  packGrid: { paddingHorizontal: spacing.lg, paddingTop: spacing.md, gap: spacing.sm },
+  packRow: { flexDirection: 'row', gap: spacing.sm },
+  pack: {
+    flex: 1, borderRadius: radius.lg, overflow: 'hidden', backgroundColor: colors.white,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.07, shadowRadius: 14, elevation: 3,
+  },
+  packImg: {
+    height: 116, backgroundColor: PACK_BG,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 2, paddingHorizontal: 8,
+  },
+  packLogo: { flex: 1, height: 78 },
+  packFoot: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, paddingVertical: 11, gap: 6, minHeight: 48 },
+  packTitle: { flex: 1, fontFamily: fonts.bodyBold, fontSize: 12.5, color: colors.ink, lineHeight: 16 },
 
   brandRow: { flexDirection: 'row', gap: spacing.sm, paddingHorizontal: spacing.lg, paddingTop: spacing.md },
   brand: { flex: 1, alignItems: 'center', gap: 4 },
