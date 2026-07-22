@@ -23,6 +23,8 @@ import ProConfirmScreen from './src/screens/ProConfirmScreen';
 import ProLoginScreen from './src/screens/ProLoginScreen';
 import ProHomeScreen from './src/screens/ProHomeScreen';
 import ProProductScreen from './src/screens/ProProductScreen';
+import ProContactScreen from './src/screens/ProContactScreen';
+import ProInvoicesScreen from './src/screens/ProInvoicesScreen';
 import FavoritesScreen from './src/screens/FavoritesScreen';
 import OrdersScreen from './src/screens/OrdersScreen';
 import PlaceholderScreen from './src/screens/PlaceholderScreen';
@@ -60,6 +62,8 @@ export default function App() {
           <Stack.Screen name="ProLogin" component={ProLoginScreen} />
           <Stack.Screen name="ProHome" component={ProHomeScreen} />
           <Stack.Screen name="ProProduct" component={ProProductScreen} />
+          <Stack.Screen name="ProContact" component={ProContactScreen} />
+          <Stack.Screen name="ProInvoices" component={ProInvoicesScreen} />
           <Stack.Screen name="Favorites" component={FavoritesScreen} />
           <Stack.Screen name="Orders" component={OrdersScreen} />
         </Stack.Navigator>

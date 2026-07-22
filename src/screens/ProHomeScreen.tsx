@@ -13,10 +13,10 @@ const PRO_BLUE = colors.blue;
 const AMBER = colors.mango;
 
 const QUICK = [
-  { icon: 'cart-outline', label: 'Nouvo kòmann', bg: '#E3EAF7' },
-  { icon: 'car-outline', label: 'Swiv livrezon', bg: '#E1EFE2' },
-  { icon: 'call-outline', label: 'Komèsyal mwen', bg: '#FCEFDD' },
-  { icon: 'document-text-outline', label: 'Fakti pro forma', bg: '#FDF6E7' },
+  { icon: 'cart-outline', label: 'Nouvo kòmann', bg: '#E3EAF7', to: 'ProProduct', params: { proId: proProducts[0].id } },
+  { icon: 'car-outline', label: 'Swiv livrezon', bg: '#E1EFE2', to: 'Tracking', params: undefined },
+  { icon: 'call-outline', label: 'Komèsyal mwen', bg: '#FCEFDD', to: 'ProContact', params: undefined },
+  { icon: 'document-text-outline', label: 'Fakti pro forma', bg: '#FDF6E7', to: 'ProInvoices', params: undefined },
 ];
 
 export default function ProHomeScreen() {
@@ -80,13 +80,13 @@ export default function ProHomeScreen() {
         {/* Actions rapides */}
         <View style={styles.quickGrid}>
           {QUICK.map((q) => (
-            <View key={q.label} style={[styles.quick, { backgroundColor: q.bg }]}>
+            <Pressable key={q.label} style={[styles.quick, { backgroundColor: q.bg }]} onPress={() => navigation.navigate(q.to, q.params)}>
               <View style={styles.quickTop}>
                 <Ionicons name={q.icon as any} size={22} color={colors.ink} />
                 <Ionicons name="chevron-forward" size={16} color="#B7A98F" />
               </View>
               <Text style={styles.quickLabel}>{q.label}</Text>
-            </View>
+            </Pressable>
           ))}
         </View>
 
@@ -123,7 +123,7 @@ export default function ProHomeScreen() {
           </View>
           <Text style={styles.repLine}>✉️  jerry.baptiste@bamhaiti.com</Text>
           <Text style={styles.repLine}>📱  +509 38 12 44 09</Text>
-          <Pressable style={styles.repBtn}><Text style={styles.repBtnText}>Kontakte</Text></Pressable>
+          <Pressable style={styles.repBtn} onPress={() => navigation.navigate('ProContact')}><Text style={styles.repBtnText}>Kontakte</Text></Pressable>
         </View>
 
         {/* Prix spécial */}
