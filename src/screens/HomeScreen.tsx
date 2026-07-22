@@ -116,6 +116,19 @@ export default function HomeScreen() {
           ))}
         </View>
 
+        {/* Mak popilè — logos produits */}
+        <Text style={styles.sectionTitle}>Mak popilè n ap ofri</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.brandRow}>
+          {brands.map((b) => (
+            <Pressable key={b.id} style={styles.brand} onPress={() => navigation.navigate('Product', { pid: b.id })}>
+              <View style={styles.brandTile}>
+                <Image source={b.image} style={styles.brandImg} resizeMode="contain" />
+              </View>
+              <Text style={styles.brandLabel} numberOfLines={1}>{b.label}</Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+
         {/* Catégories */}
         <Text style={styles.sectionTitle}>Kategori</Text>
         <View style={styles.catRow}>
@@ -196,19 +209,6 @@ export default function HomeScreen() {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.carousel}>
           {bestSellers.map((p) => (
             <PopularCard key={p.id} product={p} onOpen={() => navigation.navigate('Product', { pid: p.id })} />
-          ))}
-        </ScrollView>
-
-        {/* Mak popilè — logos produits */}
-        <Text style={styles.sectionTitle}>Mak popilè n ap ofri</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.brandRow}>
-          {brands.map((b) => (
-            <Pressable key={b.id} style={styles.brand} onPress={() => navigation.navigate('Product', { pid: b.id })}>
-              <View style={styles.brandTile}>
-                <Image source={b.image} style={styles.brandImg} resizeMode="contain" />
-              </View>
-              <Text style={styles.brandLabel} numberOfLines={1}>{b.label}</Text>
-            </Pressable>
           ))}
         </ScrollView>
 
