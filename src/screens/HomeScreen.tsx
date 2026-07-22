@@ -430,13 +430,9 @@ const styles = StyleSheet.create({
   flashImg: { width: '78%', height: '86%' },
 
   brandRow: { flexDirection: 'row', gap: spacing.sm, paddingHorizontal: spacing.lg, paddingTop: spacing.md },
-  brand: { flex: 1, alignItems: 'center', gap: 7 },
-  brandTile: {
-    width: '100%', height: 96, borderRadius: radius.md, backgroundColor: colors.white,
-    alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 10, elevation: 2,
-  },
-  brandImg: { width: '94%', height: '94%' },
+  brand: { flex: 1, alignItems: 'center', gap: 4 },
+  brandTile: { width: '100%', height: 92, alignItems: 'center', justifyContent: 'center' },
+  brandImg: { width: '100%', height: '100%' },
   brandLabel: { fontFamily: fonts.bodyBold, fontSize: 11.5, color: colors.ink },
 
   story: {
