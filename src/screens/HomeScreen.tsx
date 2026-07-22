@@ -9,6 +9,7 @@ import BottomNav, { BOTTOM_NAV_SPACE } from '../components/BottomNav';
 import DetailProToggle from '../components/DetailProToggle';
 import { products, fmtGourdes, type Product } from '../data/products';
 import { useCart } from '../context/CartContext';
+import { usePro } from '../context/ProContext';
 
 // Redesign « Scoops » (layout épuré, aéré) — contenu krèyol & palette BAM
 // conservés. Repris de showHomeRetail du prototype, réagencé.
@@ -40,12 +41,12 @@ const BRANDS = [
 // Packs / bundles — même structure que la maquette (image + titre + icône).
 const PACK_BG = '#F3A83A';
 const PACKS = [
-  { title: 'Paket Fanmi', icon: 'people', cat: null, logos: [logoRice, logoJuice, logoNoodle] },
-  { title: 'Paket Bwason & Noodle', icon: 'fast-food', cat: null, logos: [logoJuice, logoNoodle] },
-  { title: 'Paket Diri', icon: 'leaf', cat: 'Riz', logos: [logoRice] },
-  { title: 'Paket Juice', icon: 'water', cat: 'Jus', logos: [logoJuice] },
-  { title: 'Paket Noodle', icon: 'restaurant', cat: 'Nouilles', logos: [logoNoodle] },
-  { title: 'Paket Konplè', icon: 'star', cat: null, logos: [logoRice, logoJuice, logoNoodle] },
+  { title: 'Paket Fanmi', icon: 'people', cat: null, from: 2500, logos: [logoRice, logoJuice, logoNoodle] },
+  { title: 'Paket Bwason & Noodle', icon: 'fast-food', cat: null, from: 1800, logos: [logoJuice, logoNoodle] },
+  { title: 'Paket Diri', icon: 'leaf', cat: 'Riz', from: 3450, logos: [logoRice] },
+  { title: 'Paket Juice', icon: 'water', cat: 'Jus', from: 1400, logos: [logoJuice] },
+  { title: 'Paket Noodle', icon: 'restaurant', cat: 'Nouilles', from: 1600, logos: [logoNoodle] },
+  { title: 'Paket Konplè', icon: 'star', cat: null, from: 4900, logos: [logoRice, logoJuice, logoNoodle] },
 ] as const;
 
 const CATS = [
@@ -63,6 +64,7 @@ const TRUST = [
 export default function HomeScreen() {
   const navigation = useNavigation<any>();
   const { count } = useCart();
+  const { isPro } = usePro();
   const popular = products.filter((p) => p.cat === 'Jus').slice(0, 3);
   // Meilleures ventes : un mix (riz, nouilles, cerise) pour varier du carrousel jus.
   const bestSellers = ['riz-25', 'nouille', 'j-cherry']
@@ -101,7 +103,7 @@ export default function HomeScreen() {
 
         {/* Bascule Détail / Pro (animée) */}
         <View style={styles.switchWrap}>
-          <DetailProToggle onPro={() => navigation.navigate('ProIntro')} />
+          <DetailProToggle onPro={() => navigation.navigate(isPro ? 'ProHome' : 'ProIntro')} />
         </View>
 
         {/* Recherche */}
@@ -223,8 +225,11 @@ export default function HomeScreen() {
                 ))}
               </View>
               <View style={styles.packFoot}>
-                <Text style={styles.packTitle} numberOfLines={2}>{p.title}</Text>
-                <Ionicons name={p.icon as any} size={17} color={colors.mangoDark} />
+                <View style={styles.packFootTop}>
+                  <Text style={styles.packTitle} numberOfLines={2}>{p.title}</Text>
+                  <Ionicons name={p.icon as any} size={17} color={colors.mangoDark} />
+                </View>
+                <Text style={styles.packPrice}>a pati de <Text style={styles.packPriceVal}>{fmtGourdes(p.from)}</Text></Text>
               </View>
             </Pressable>
           ))}
@@ -470,8 +475,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 2, paddingHorizontal: 8,
   },
   packLogo: { flex: 1, height: 78 },
-  packFoot: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, paddingVertical: 11, gap: 6, minHeight: 48 },
+  packFoot: { paddingHorizontal: 12, paddingVertical: 11, gap: 4 },
+  packFootTop: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 6, minHeight: 34 },
   packTitle: { flex: 1, fontFamily: fonts.bodyBold, fontSize: 12.5, color: colors.ink, lineHeight: 16 },
+  packPrice: { fontFamily: fonts.bodyRegular, fontSize: 10.5, color: 'rgba(22,32,26,0.55)' },
+  packPriceVal: { fontFamily: fonts.bodyBold, fontSize: 12, color: colors.red },
 
   brandRow: { flexDirection: 'row', gap: spacing.sm, paddingHorizontal: spacing.lg, paddingTop: spacing.md },
   brand: { flex: 1, alignItems: 'center', gap: 4 },

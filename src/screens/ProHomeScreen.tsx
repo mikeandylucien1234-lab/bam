@@ -7,6 +7,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useNavigation } from '@react-navigation/native';
 import { colors, radius, spacing, fonts } from '../theme';
 import { proProducts, fmtGourdes } from '../data/products';
+import ProBottomNav, { PRO_NAV_SPACE } from '../components/ProBottomNav';
 
 const PRO_BLUE = colors.blue;
 const AMBER = colors.mango;
@@ -24,7 +25,7 @@ export default function ProHomeScreen() {
   return (
     <View style={styles.screen}>
       <StatusBar style="light" />
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: spacing.xl }} bounces={false}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: PRO_NAV_SPACE }} bounces={false}>
         <SafeAreaView edges={['top']}>
           <LinearGradient colors={[PRO_BLUE, '#132F6E']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
             <View style={styles.heroTop}>
@@ -132,6 +133,8 @@ export default function ProHomeScreen() {
           <View style={styles.specialBtn}><Text style={styles.specialBtnText}>WhatsApp +509 38 00 00 00</Text></View>
         </View>
       </ScrollView>
+
+      <ProBottomNav />
     </View>
   );
 }

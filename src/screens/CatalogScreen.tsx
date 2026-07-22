@@ -7,6 +7,7 @@ import { colors, radius, spacing, fonts } from '../theme';
 import BottomNav, { BOTTOM_NAV_SPACE } from '../components/BottomNav';
 import { products, fmtGourdes, type Product } from '../data/products';
 import { useCart } from '../context/CartContext';
+import { useFavorites } from '../context/FavoritesContext';
 
 // Redesign « Scoops » (layout épuré) — contenu & palette BAM conservés.
 // Traduit de la section showCatalog du prototype (catalogProducts + catChips).
@@ -101,6 +102,8 @@ function CartButton({ onPress }: { onPress: () => void }) {
 
 function ProductCard({ product, onOpen }: { product: Product; onOpen: () => void }) {
   const { addItem } = useCart();
+  const { isFav, toggleFav } = useFavorites();
+  const fav = isFav(product.id);
   const [added, setAdded] = useState(false);
   const onAdd = (e: any) => {
     e?.stopPropagation?.();
@@ -113,6 +116,9 @@ function ProductCard({ product, onOpen }: { product: Product; onOpen: () => void
     <Pressable style={styles.card} onPress={onOpen}>
       <View style={styles.imageWrap}>
         <Image source={product.image} style={styles.image} resizeMode="contain" />
+        <Pressable style={styles.heart} onPress={(e) => { e.stopPropagation(); toggleFav(product.id); }} hitSlop={8}>
+          <Ionicons name={fav ? 'heart' : 'heart-outline'} size={18} color={fav ? colors.red : 'rgba(22,32,26,0.4)'} />
+        </Pressable>
       </View>
       <Text style={styles.name} numberOfLines={1}>{product.name}</Text>
       <Text style={styles.sub} numberOfLines={1}>{product.sub}</Text>
@@ -170,6 +176,10 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   image: { height: 120, width: '82%' },
+  heart: {
+    position: 'absolute', top: 8, right: 8, width: 32, height: 32, borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.9)', alignItems: 'center', justifyContent: 'center',
+  },
   name: { fontFamily: fonts.bodyBold, fontSize: 14.5, color: colors.ink },
   sub: { fontFamily: fonts.bodyRegular, fontSize: 12, color: SUB_TEXT, marginTop: 1 },
   cardBottom: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 },

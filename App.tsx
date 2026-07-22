@@ -7,6 +7,8 @@ import { View } from 'react-native';
 import { useAppFonts } from './src/theme/fonts';
 import { colors } from './src/theme';
 import { CartProvider } from './src/context/CartContext';
+import { ProProvider } from './src/context/ProContext';
+import { FavoritesProvider } from './src/context/FavoritesContext';
 import HomeScreen from './src/screens/HomeScreen';
 import CatalogScreen from './src/screens/CatalogScreen';
 import ProductScreen from './src/screens/ProductScreen';
@@ -21,6 +23,8 @@ import ProConfirmScreen from './src/screens/ProConfirmScreen';
 import ProLoginScreen from './src/screens/ProLoginScreen';
 import ProHomeScreen from './src/screens/ProHomeScreen';
 import ProProductScreen from './src/screens/ProProductScreen';
+import FavoritesScreen from './src/screens/FavoritesScreen';
+import OrdersScreen from './src/screens/OrdersScreen';
 import PlaceholderScreen from './src/screens/PlaceholderScreen';
 
 const Stack = createNativeStackNavigator();
@@ -36,6 +40,8 @@ export default function App() {
   }
 
   return (
+    <ProProvider>
+    <FavoritesProvider>
     <CartProvider>
       <NavigationContainer>
         <StatusBar style="dark" />
@@ -54,10 +60,12 @@ export default function App() {
           <Stack.Screen name="ProLogin" component={ProLoginScreen} />
           <Stack.Screen name="ProHome" component={ProHomeScreen} />
           <Stack.Screen name="ProProduct" component={ProProductScreen} />
-          <Stack.Screen name="Favorites" component={PlaceholderScreen} />
-          <Stack.Screen name="Orders" component={PlaceholderScreen} />
+          <Stack.Screen name="Favorites" component={FavoritesScreen} />
+          <Stack.Screen name="Orders" component={OrdersScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </CartProvider>
+    </FavoritesProvider>
+    </ProProvider>
   );
 }

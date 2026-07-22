@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { colors, radius, spacing, fonts } from '../theme';
+import { usePro } from '../context/ProContext';
 
 const PRO_BLUE = colors.blue;
 const MUTED = 'rgba(22,32,26,0.6)';
@@ -11,8 +12,13 @@ const BORDER = 'rgba(22,32,26,0.16)';
 
 export default function ProLoginScreen() {
   const navigation = useNavigation<any>();
+  const { becomePro } = usePro();
   const [tel, setTel] = useState('');
   const [pass, setPass] = useState('');
+  const login = () => {
+    becomePro();
+    navigation.navigate('ProHome');
+  };
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
@@ -36,7 +42,7 @@ export default function ProLoginScreen() {
             <TextInput value={pass} onChangeText={setPass} placeholder="••••••••" placeholderTextColor="rgba(22,32,26,0.35)" secureTextEntry style={styles.input} />
           </View>
 
-          <Pressable style={styles.cta} onPress={() => navigation.navigate('ProHome')}>
+          <Pressable style={styles.cta} onPress={login}>
             <Text style={styles.ctaText}>Konekte</Text>
           </Pressable>
         </View>

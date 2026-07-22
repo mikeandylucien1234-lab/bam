@@ -4,11 +4,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { colors, radius, spacing, fonts } from '../theme';
+import { usePro } from '../context/ProContext';
 
 const PRO_BLUE = colors.blue;
 
 export default function ProConfirmScreen() {
   const navigation = useNavigation<any>();
+  const { becomePro } = usePro();
+  const enter = () => {
+    becomePro();
+    navigation.navigate('ProHome');
+  };
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
       <View style={styles.center}>
@@ -19,7 +25,7 @@ export default function ProConfirmScreen() {
         <Text style={styles.sub}>
           Demann ou anrejistre avèk siksè. Ekip BAM ap egzamine li. Pou pwototip sa a, etap sa a se pou ilistrasyon.
         </Text>
-        <Pressable style={styles.cta} onPress={() => navigation.navigate('ProHome')}>
+        <Pressable style={styles.cta} onPress={enter}>
           <Text style={styles.ctaText}>Dekouvri BAM Pro</Text>
         </Pressable>
       </View>
