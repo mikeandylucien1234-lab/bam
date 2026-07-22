@@ -47,6 +47,12 @@ export default function HomeScreen() {
     .map((id) => products.find((p) => p.id === id))
     .filter(Boolean) as Product[];
   const flashProduct = products.find((p) => p.id === 'j-cherry')!;
+  // « Mak popilè » : un badge-logo par produit (nom court).
+  const brands = products.map((p) => ({
+    id: p.id,
+    label: p.id === 'riz-25' ? 'Riz Jasmin' : p.id === 'nouille' ? 'Nouilles' : p.name,
+    image: p.image,
+  }));
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
@@ -190,6 +196,19 @@ export default function HomeScreen() {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.carousel}>
           {bestSellers.map((p) => (
             <PopularCard key={p.id} product={p} onOpen={() => navigation.navigate('Product', { pid: p.id })} />
+          ))}
+        </ScrollView>
+
+        {/* Mak popilè — logos produits */}
+        <Text style={styles.sectionTitle}>Mak popilè n ap ofri</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.brandRow}>
+          {brands.map((b) => (
+            <Pressable key={b.id} style={styles.brand} onPress={() => navigation.navigate('Product', { pid: b.id })}>
+              <View style={styles.brandTile}>
+                <Image source={b.image} style={styles.brandImg} resizeMode="contain" />
+              </View>
+              <Text style={styles.brandLabel} numberOfLines={1}>{b.label}</Text>
+            </Pressable>
           ))}
         </ScrollView>
 
@@ -409,6 +428,16 @@ const styles = StyleSheet.create({
   colon: { fontFamily: fonts.bodyBold, fontSize: 15, color: 'rgba(238,240,234,0.6)' },
   flashImgWrap: { width: 96, height: 118, borderRadius: radius.md, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center' },
   flashImg: { width: '78%', height: '86%' },
+
+  brandRow: { flexDirection: 'row', gap: spacing.sm, paddingHorizontal: spacing.lg, paddingTop: spacing.md },
+  brand: { alignItems: 'center', gap: 7, width: 96 },
+  brandTile: {
+    width: 96, height: 84, borderRadius: radius.md, backgroundColor: colors.white,
+    alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 10, elevation: 2,
+  },
+  brandImg: { width: '64%', height: '84%' },
+  brandLabel: { fontFamily: fonts.bodyBold, fontSize: 11.5, color: colors.ink },
 
   story: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
