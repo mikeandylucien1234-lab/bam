@@ -9,6 +9,7 @@ import { colors } from './src/theme';
 import { CartProvider } from './src/context/CartContext';
 import { ProProvider } from './src/context/ProContext';
 import { FavoritesProvider } from './src/context/FavoritesContext';
+import { CatalogueProvider } from './src/context/CatalogueContext';
 import HomeScreen from './src/screens/HomeScreen';
 import CatalogScreen from './src/screens/CatalogScreen';
 import ProductScreen from './src/screens/ProductScreen';
@@ -42,6 +43,7 @@ export default function App() {
   }
 
   return (
+    <CatalogueProvider>
     <ProProvider>
     <FavoritesProvider>
     <CartProvider>
@@ -71,5 +73,6 @@ export default function App() {
     </CartProvider>
     </FavoritesProvider>
     </ProProvider>
+    </CatalogueProvider>
   );
 }

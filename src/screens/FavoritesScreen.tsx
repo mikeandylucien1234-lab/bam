@@ -4,15 +4,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { colors, radius, spacing, fonts } from '../theme';
-import { products, fmtGourdes } from '../data/products';
+import { fmtGourdes } from '../data/products';
 import BottomNav, { BOTTOM_NAV_SPACE } from '../components/BottomNav';
 import { useFavorites } from '../context/FavoritesContext';
+import { useCatalogue } from '../context/CatalogueContext';
 
 const MUTED = 'rgba(22,32,26,0.55)';
 
 export default function FavoritesScreen() {
   const navigation = useNavigation<any>();
   const { favIds, toggleFav } = useFavorites();
+  const { products } = useCatalogue();
   const favs = products.filter((p) => favIds.includes(p.id));
 
   return (

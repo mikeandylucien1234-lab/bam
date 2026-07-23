@@ -5,8 +5,9 @@ import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { colors, radius, spacing, fonts } from '../theme';
-import { products, formatsFor, fmtGourdes } from '../data/products';
+import { fmtGourdes } from '../data/products';
 import { useCart } from '../context/CartContext';
+import { useCatalogue } from '../context/CatalogueContext';
 
 // Traduit de la section showProduct du prototype web (markup l.454-496,
 // logique prod/formats/qty/addSelected l.1063-1073 & 1235-1245).
@@ -22,6 +23,7 @@ export default function ProductScreen() {
   const route = useRoute<any>();
   const insets = useSafeAreaInsets();
   const { addItem } = useCart();
+  const { products, formatsFor } = useCatalogue();
 
   // products.find(x => x.id === S.pid) || products[0]
   const product = products.find((p) => p.id === route.params?.pid) ?? products[0];

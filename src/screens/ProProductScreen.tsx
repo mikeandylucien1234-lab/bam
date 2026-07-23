@@ -5,8 +5,9 @@ import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { colors, radius, spacing, fonts } from '../theme';
-import { proProducts, fmtGourdes } from '../data/products';
+import { fmtGourdes } from '../data/products';
 import { useCart } from '../context/CartContext';
+import { useCatalogue } from '../context/CatalogueContext';
 
 const PRO_BLUE = colors.blue;
 const MUTED = 'rgba(22,32,26,0.6)';
@@ -17,6 +18,7 @@ export default function ProProductScreen() {
   const route = useRoute<any>();
   const insets = useSafeAreaInsets();
   const { addItem } = useCart();
+  const { proProducts } = useCatalogue();
 
   const pp = proProducts.find((p) => p.id === route.params?.proId) ?? proProducts[0];
   const [tierIdx, setTierIdx] = useState(0);

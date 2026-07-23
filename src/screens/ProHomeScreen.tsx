@@ -6,7 +6,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { useNavigation } from '@react-navigation/native';
 import { colors, radius, spacing, fonts } from '../theme';
-import { proProducts, fmtGourdes } from '../data/products';
+import { fmtGourdes } from '../data/products';
+import { useCatalogue } from '../context/CatalogueContext';
 import ProBottomNav, { PRO_NAV_SPACE } from '../components/ProBottomNav';
 import Marquee from '../components/Marquee';
 
@@ -44,7 +45,7 @@ const PRO_BLUE = colors.blue;
 const AMBER = colors.mango;
 
 const QUICK = [
-  { icon: 'cart-outline', label: 'Nouvo kòmann', bg: '#E3EAF7', to: 'ProProduct', params: { proId: proProducts[0].id } },
+  { icon: 'cart-outline', label: 'Nouvo kòmann', bg: '#E3EAF7', to: 'ProProduct', params: { proId: 'pro-jus' } },
   { icon: 'car-outline', label: 'Swiv livrezon', bg: '#E1EFE2', to: 'Tracking', params: undefined },
   { icon: 'call-outline', label: 'Komèsyal mwen', bg: '#FCEFDD', to: 'ProContact', params: undefined },
   { icon: 'document-text-outline', label: 'Fakti pro forma', bg: '#FDF6E7', to: 'ProInvoices', params: undefined },
@@ -52,6 +53,7 @@ const QUICK = [
 
 export default function ProHomeScreen() {
   const navigation = useNavigation<any>();
+  const { proProducts } = useCatalogue();
 
   return (
     <View style={styles.screen}>

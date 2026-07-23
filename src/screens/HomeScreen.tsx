@@ -7,9 +7,10 @@ import { useNavigation } from '@react-navigation/native';
 import { colors, radius, spacing, fonts } from '../theme';
 import BottomNav, { BOTTOM_NAV_SPACE } from '../components/BottomNav';
 import DetailProToggle from '../components/DetailProToggle';
-import { products, fmtGourdes, type Product } from '../data/products';
+import { fmtGourdes, type Product } from '../data/products';
 import { useCart } from '../context/CartContext';
 import { usePro } from '../context/ProContext';
+import { useCatalogue } from '../context/CatalogueContext';
 
 // Redesign « Scoops » (layout épuré, aéré) — contenu krèyol & palette BAM
 // conservés. Repris de showHomeRetail du prototype, réagencé.
@@ -65,6 +66,7 @@ export default function HomeScreen() {
   const navigation = useNavigation<any>();
   const { count } = useCart();
   const { isPro } = usePro();
+  const { products } = useCatalogue();
   const popular = products.filter((p) => p.cat === 'Jus').slice(0, 3);
   // Meilleures ventes : un mix (riz, nouilles, cerise) pour varier du carrousel jus.
   const bestSellers = ['riz-25', 'nouille', 'j-cherry']

@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { colors, radius, spacing, fonts } from '../theme';
+import { supabase } from '../lib/supabase';
 
 const PRO_BLUE = colors.blue;
 const MUTED = 'rgba(22,32,26,0.55)';
@@ -71,9 +72,23 @@ export default function ProOnboardingScreen() {
 
   const canProceed = current.fields.every((f) => (data[f.key] ?? '').trim().length > 0);
 
+  const submit = async () => {
+    // Envoi de la demande revendeur au backend (best-effort, user_id null autorisé).
+    try {
+      await supabase.from('pro_applications').insert({
+        non: data.non, prenon: data.prenon, tel: data.tel,
+        non_komes: data.nonKomes, kalite_komes: data.kalite,
+        vil: data.vil, komin: data.komin, volim: data.volim,
+      });
+    } catch {
+      // on continue même si l'envoi échoue (démo)
+    }
+    navigation.navigate('ProConfirm');
+  };
+
   const next = () => {
     if (step < total - 1) setStep((s) => s + 1);
-    else navigation.navigate('ProConfirm');
+    else submit();
   };
   const back = () => {
     if (step > 0) setStep((s) => s - 1);

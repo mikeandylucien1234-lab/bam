@@ -5,9 +5,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { colors, radius, spacing, fonts } from '../theme';
 import BottomNav, { BOTTOM_NAV_SPACE } from '../components/BottomNav';
-import { products, fmtGourdes, type Product } from '../data/products';
+import { fmtGourdes, type Product } from '../data/products';
 import { useCart } from '../context/CartContext';
 import { useFavorites } from '../context/FavoritesContext';
+import { useCatalogue } from '../context/CatalogueContext';
 
 // Redesign « Scoops » (layout épuré) — contenu & palette BAM conservés.
 // Traduit de la section showCatalog du prototype (catalogProducts + catChips).
@@ -22,6 +23,7 @@ type Category = (typeof CATEGORIES)[number];
 export default function CatalogScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
+  const { products } = useCatalogue();
 
   const initialCat: Category = CATEGORIES.includes(route.params?.cat) ? route.params.cat : 'Tout';
   const [cat, setCat] = useState<Category>(initialCat);
