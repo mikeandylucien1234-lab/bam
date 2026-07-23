@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, ScrollView, Pressable, Image, StyleSheet } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, ScrollView, Pressable, Image, StyleSheet, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -8,6 +8,37 @@ import { useNavigation } from '@react-navigation/native';
 import { colors, radius, spacing, fonts } from '../theme';
 import { proProducts, fmtGourdes } from '../data/products';
 import ProBottomNav, { PRO_NAV_SPACE } from '../components/ProBottomNav';
+import Marquee from '../components/Marquee';
+
+const TICKER = [
+  'Jus Passion  ▲  4 400 G / kès',
+  'Livrezon menm jou · kòmande anvan 14è',
+  'Diri Jasmin  ▼  3 050 G / sak',
+  '3 palèt anvan tarif Gold',
+  'Nouvo palèt Jus 100 kès disponib',
+  'Nouilles carton  ▲  5 480 G',
+  '−7% sou komann 100 kès+',
+];
+
+function LiveDot() {
+  const a = useRef(new Animated.Value(1)).current;
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(a, { toValue: 0.25, duration: 700, useNativeDriver: true }),
+        Animated.timing(a, { toValue: 1, duration: 700, useNativeDriver: true }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, []);
+  return (
+    <View style={styles.liveWrap}>
+      <Animated.View style={[styles.liveDot, { opacity: a }]} />
+      <Text style={styles.liveText}>LIVE</Text>
+    </View>
+  );
+}
 
 const PRO_BLUE = colors.blue;
 const AMBER = colors.mango;
@@ -27,9 +58,19 @@ export default function ProHomeScreen() {
       <StatusBar style="light" />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: PRO_NAV_SPACE }} bounces={false}>
         <SafeAreaView edges={['top']}>
-          <LinearGradient colors={[PRO_BLUE, '#132F6E']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
+          <LinearGradient colors={['#0A1230', '#111C46', '#0A1024']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
+            <View style={styles.heroBlob} />
             <View style={styles.heroTop}>
-              <View style={styles.logo}><Text style={styles.logoText}>BAM</Text></View>
+              <View style={styles.brandRow}>
+                <View style={styles.logo}><Text style={styles.logoText}>BAM</Text></View>
+                <View>
+                  <Text style={styles.brandName}>BAM Wholesale</Text>
+                  <View style={styles.tier}>
+                    <Ionicons name="ribbon" size={10} color={AMBER} />
+                    <Text style={styles.tierText}>REVANDÈ · SILVER</Text>
+                  </View>
+                </View>
+              </View>
               <View style={styles.toggle}>
                 <Pressable style={styles.toggleBtn} onPress={() => navigation.navigate('Home')}>
                   <Text style={styles.toggleInactive}>Détail</Text>
@@ -39,8 +80,26 @@ export default function ProHomeScreen() {
                 </View>
               </View>
             </View>
-            <Text style={styles.heroTitle}>Espace Revendeur</Text>
-            <Text style={styles.heroSub}>Prix palette · Livraison dépôt · Facture pro forma</Text>
+
+            {/* Stat chips */}
+            <View style={styles.statChips}>
+              <View style={styles.statChip}>
+                <Text style={styles.statChipLabel}>Kredi disponib</Text>
+                <Text style={styles.statChipValue}>120 000 G</Text>
+              </View>
+              <View style={styles.statChipDivider} />
+              <View style={styles.statChip}>
+                <Text style={styles.statChipLabel}>Pwochèn livrezon</Text>
+                <Text style={styles.statChipValue}>Jodi a · 3–5 PM</Text>
+              </View>
+            </View>
+
+            {/* Ticker live */}
+            <View style={styles.ticker}>
+              <LiveDot />
+              <View style={styles.tickerSep} />
+              <Marquee items={TICKER} color="rgba(255,255,255,0.9)" speed={48} />
+            </View>
           </LinearGradient>
         </SafeAreaView>
 
@@ -141,17 +200,39 @@ export default function ProHomeScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.cream },
-  hero: { paddingHorizontal: spacing.lg, paddingTop: spacing.sm, paddingBottom: 24, borderBottomLeftRadius: 24, borderBottomRightRadius: 24 },
+  hero: { paddingHorizontal: spacing.lg, paddingTop: spacing.sm, paddingBottom: 16, borderBottomLeftRadius: 26, borderBottomRightRadius: 26, overflow: 'hidden' },
+  heroBlob: { position: 'absolute', width: 260, height: 260, borderRadius: 130, backgroundColor: 'rgba(242,161,37,0.10)', right: -90, top: -110 },
   heroTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  logo: { width: 44, height: 44, borderRadius: 14, backgroundColor: AMBER, alignItems: 'center', justifyContent: 'center' },
-  logoText: { fontFamily: fonts.displayBold, fontSize: 15, color: colors.ink },
-  toggle: { flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.14)', borderRadius: radius.pill, padding: 3, gap: 2 },
-  toggleBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: radius.pill },
+  brandRow: { flexDirection: 'row', alignItems: 'center', gap: 11 },
+  logo: { width: 42, height: 42, borderRadius: 13, backgroundColor: AMBER, alignItems: 'center', justifyContent: 'center' },
+  logoText: { fontFamily: fonts.displayBold, fontSize: 14, color: colors.ink },
+  brandName: { fontFamily: fonts.bodyBold, fontSize: 14.5, color: colors.white },
+  tier: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 3 },
+  tierText: { fontFamily: fonts.bodyBold, fontSize: 10, letterSpacing: 1, color: AMBER },
+  toggle: { flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: radius.pill, padding: 3, gap: 2 },
+  toggleBtn: { paddingHorizontal: 15, paddingVertical: 7, borderRadius: radius.pill },
   toggleInactive: { fontFamily: fonts.bodyBold, fontSize: 12.5, color: 'rgba(255,255,255,0.75)' },
   toggleActive: { backgroundColor: AMBER },
   toggleActiveText: { fontFamily: fonts.bodyBold, fontSize: 12.5, color: colors.ink },
-  heroTitle: { fontFamily: fonts.display, fontSize: 32, color: colors.white, marginTop: 16, lineHeight: 35 },
-  heroSub: { fontFamily: fonts.bodyRegular, fontSize: 13, color: 'rgba(255,255,255,0.75)', marginTop: 8 },
+
+  statChips: {
+    flexDirection: 'row', alignItems: 'center', marginTop: 20,
+    backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
+    borderRadius: radius.md, paddingVertical: 12, paddingHorizontal: 16,
+  },
+  statChip: { flex: 1, gap: 3 },
+  statChipDivider: { width: 1, alignSelf: 'stretch', backgroundColor: 'rgba(255,255,255,0.12)', marginHorizontal: 14 },
+  statChipLabel: { fontFamily: fonts.bodyRegular, fontSize: 10.5, color: 'rgba(255,255,255,0.55)', letterSpacing: 0.3 },
+  statChipValue: { fontFamily: fonts.bodyBold, fontSize: 15, color: colors.white },
+
+  ticker: {
+    flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 12,
+    backgroundColor: 'rgba(0,0,0,0.28)', borderRadius: 12, paddingVertical: 9, paddingLeft: 12, paddingRight: 14,
+  },
+  liveWrap: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  liveDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#FF4D4D' },
+  liveText: { fontFamily: fonts.bodyBold, fontSize: 10, letterSpacing: 1, color: '#FF6B6B' },
+  tickerSep: { width: 1, height: 14, backgroundColor: 'rgba(255,255,255,0.2)' },
 
   account: { marginHorizontal: spacing.lg, marginTop: 24, borderRadius: radius.lg, padding: 22, gap: 16 },
   accountHead: { flexDirection: 'row', alignItems: 'center', gap: 12 },
