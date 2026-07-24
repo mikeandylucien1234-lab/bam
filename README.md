@@ -1,80 +1,72 @@
-# BAM App — projet Expo
+# Haitian Stars Media (HSM) — app Expo
 
-Scaffold de départ migré depuis le prototype web (mêmes données produits,
-mêmes couleurs, même copy kreyòl). L'écran `Home` est complet ; les autres
-sont en placeholder à finir dans Claude Code.
+Plateforme de streaming pour un média haïtien (interviews, podcasts, rap
+kreyòl) destinée à la diaspora. Design sombre & cinématographique, interface
+en français, titres/descriptions souvent en kreyòl.
+
+> Ce dépôt a été repivoté depuis un ancien prototype retail (« BAM ») vers
+> HSM. Les fichiers de l'ancien prototype ont été retirés ; `HomeScreen`
+> (HSM) est la référence de style pour les écrans suivants.
 
 ## 🚀 Démarrage
 
 ```bash
 # 1. Installer les dépendances
 npm install
-npx expo install react-native-svg expo-linear-gradient expo-font @expo/vector-icons \
-  @expo-google-fonts/fraunces @expo-google-fonts/plus-jakarta-sans
 
 # 2. Lancer en dev (Expo Go sur ton téléphone, scan du QR code)
 npx expo start
+
+# (optionnel) aperçu web dans le navigateur
+npx expo start --web
 ```
+
+## 🎨 Identité visuelle
+
+- Thème sombre (fond noir/anthracite `#0A0A0C`, cards `#16161C`)
+- Rouge `#E31C25` → live + CTA principal ; Or `#F5C542` → Star Member (premium)
+- Typographie bold/impactante : Plus Jakarta Sans (ExtraBold pour le display)
+- Logo : étoile dorée + « HAITIAN » (blanc) « STARS » (rouge) « MEDIA » (gris espacé)
+- Vignettes cinématographiques (dégradé par catégorie + overlay sombre en bas)
 
 ## 📂 Structure
 
 ```
-App.tsx                    → navigation + chargement polices
-src/theme/index.ts          → couleurs, espacements, rayons, ombres
-src/theme/fonts.ts           → chargement Fraunces + Plus Jakarta Sans
-src/data/products.ts        → catalogue retail + paliers de prix gros
-src/components/Seal.tsx     → logo sceau BAM (SVG)
-src/components/BottomNav.tsx → nav basse à 5 onglets
-src/screens/HomeScreen.tsx  → écran Accueil complet (référence de style)
-src/screens/PlaceholderScreen.tsx → écran temporaire pour tout le reste
-assets/images/              → vrais packshots produits extraits du prototype
+App.tsx                          → navigation + polices (thème sombre)
+src/theme/hsm.ts                 → tokens couleurs/rayons/espacements + dégradés catégories
+src/theme/fonts.ts               → chargement Plus Jakarta Sans
+src/data/shows.ts                → données démo (émissions, catégories, placeholders vidéo)
+src/components/hsm/Logo.tsx      → logo HSM (étoile SVG + wordmark)
+src/components/hsm/Thumbnail.tsx → vignette dégradé + filigrane + scrim
+src/components/hsm/ui.tsx        → badges LIVE/OFFLINE, compteur viewers, tag catégorie
+src/screens/hsm/HomeScreen.tsx   → Accueil : header + hero + « Émissions en direct »
+src/screens/hsm/PlaceholderScreen.tsx → écran temporaire pour le reste
 ```
 
-## 🛠️ Plan de travail dans Claude Code
+## ✅ État actuel
 
-Demande à Claude Code de continuer écran par écran, **en lui donnant
-`HomeScreen.tsx` comme référence de style à chaque fois** :
+Fait (accueil, 1re tranche) :
 
-1. **Catalog** — grille de produits filtrable par catégorie (Jus/Riz/Nouilles),
-   utilise `products` de `src/data/products.ts`
-2. **Product** — fiche produit avec sélection de format (`formatsFor()`),
-   quantité, ajout au panier
-3. **ProIntro / ProLogin / ProForm / ProConfirm** — parcours d'inscription
-   revendeur (mode Gros)
-4. **ProProduct** — fiche produit gros avec paliers de prix (`proProducts`)
-5. **Cart** — panier avec liste des articles, sous-total, bouton commander
-6. **Checkout** — choix paiement (MonCash / carte / cash à la livraison),
-   adresse, confirmation
-7. **Account** — profil, historique de commandes
-8. **Tracking** — suivi de commande après achat
-9. **BamPoints** — programme de fidélité
+1. **Header sticky** — logo + recherche + menu
+2. **Hero** — badge type d'émission, titre 2 lignes, description, 3 CTA
+   (Regarder maintenant / Devenir Star Member / Programme)
+3. **Émissions en direct** — cards pleine largeur, badge LIVE/OFFLINE,
+   compteur de viewers, tag catégorie, prochaine diffusion si offline
 
-Prompt type à donner à Claude Code pour chaque écran :
+## 🛠️ À venir (section par section)
 
-> Construis l'écran [NOM] en suivant exactement le style de HomeScreen.tsx
-> (mêmes tokens de src/theme, mêmes composants Seal/BottomNav, mêmes
-> ombres/rayons). Utilise les données de src/data/products.ts. Contenu :
-> [détail de ce que l'écran doit contenir].
+- Accueil : Interviews, Podcasts & débats, Collaborations, Shorts,
+  Actualités showbiz, footer
+- Pages : lecteur vidéo, Star Member (offre premium), catalogue par
+  catégorie (filtrable + recherche), profil (favoris/historique)
+- Auth : inscription/connexion (email + Google)
+- Back-office admin : CRUD émissions/vidéos, statut live/offline, catégories,
+  mise en avant du hero
+- Backend Supabase : tables `shows`, `categories`, `users`, `memberships` ;
+  Auth (email + OAuth Google) ; Row Level Security
 
-## 📦 Build avec EAS
+## ⚠️ Streaming vidéo
 
-```bash
-npm install -g eas-cli
-eas login
-eas build:configure        # génère/relie le projectId dans app.json
-eas build --platform ios --profile preview      # build de test iOS
-eas build --platform android --profile preview  # build de test Android
-eas build --platform all --profile production   # build final stores
-```
-
-Avant le build production :
-- Remplacer `REPLACE_WITH_YOUR_EAS_PROJECT_ID` dans `app.json`
-- Ajouter une vraie icône (`assets/icon.png`, 1024×1024) et un splash
-- Vérifier `bundleIdentifier` / `package` dans `app.json` (à adapter au
-  compte développeur du client)
-
-## ⚠️ Assets manquants
-
-5 images du bundle d'origine n'étaient pas référencées par un nom clair
-(fichiers `*.png`/`*.gif` nommés par UUID) — à vérifier si elles sont
-utilisées quelque part avant de les jeter.
+Pas d'infra de streaming réelle (ni RTMP ni transcodage). Les `videoUrl`
+dans `src/data/shows.ts` sont des **placeholders** (MP4 de démo). Le vrai
+service vidéo sera branché manuellement plus tard.
