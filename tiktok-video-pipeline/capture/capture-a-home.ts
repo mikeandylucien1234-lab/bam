@@ -6,7 +6,6 @@ import { config } from './config.js';
 import { launch } from './lib/browser.js';
 import { preparePage, easeInOutCubic } from './lib/prepare-page.js';
 import { FrameRecorder } from './lib/frames.js';
-import { encodeFramesToMp4 } from './lib/encode.js';
 
 async function main() {
   const { fps } = config;
@@ -17,7 +16,7 @@ async function main() {
   try {
     await preparePage(page, config.baseUrl);
 
-    const rec = new FrameRecorder(page, A.framesDir);
+    const rec = new FrameRecorder(page, A.outFile, fps);
 
     const maxScroll = await page.evaluate(
       () => Math.max(0, document.body.scrollHeight - window.innerHeight),
@@ -40,7 +39,7 @@ async function main() {
     await rec.hold(A.holdBottomSec, fps);
 
     console.log(`  frames capturées : ${rec.count}`);
-    encodeFramesToMp4(A.framesDir, A.outFile, fps);
+    await rec.close();
   } finally {
     await browser.close();
   }

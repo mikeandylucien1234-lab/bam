@@ -33,13 +33,11 @@ export const config = {
     scrollSec: 8, // durée du scroll
     holdBottomSec: 1.0, // pause en bas
     outFile: 'clean/video-a.mp4',
-    framesDir: 'raw/a',
   },
 
   /** Vidéo B — parcours réservation (timeline éditable ci-dessous). */
   videoB: {
     outFile: 'clean/video-b.mp4',
-    framesDir: 'raw/b',
     dwellSec: 1.0, // temps d'arrêt par défaut après chaque action
     moveSec: 0.6, // durée d'un déplacement de curseur
   },

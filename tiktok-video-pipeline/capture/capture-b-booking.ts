@@ -8,7 +8,6 @@ import { launch } from './lib/browser.js';
 import { preparePage, easeInOutCubic } from './lib/prepare-page.js';
 import { FrameRecorder } from './lib/frames.js';
 import { initCursor, moveCursorTo, clickRipple } from './lib/fake-cursor.js';
-import { encodeFramesToMp4 } from './lib/encode.js';
 import type { Locator, Page } from 'playwright';
 
 const { fps } = config;
@@ -95,14 +94,14 @@ async function main() {
     await preparePage(page, config.baseUrl);
     await initCursor(page);
 
-    const rec = new FrameRecorder(page, B.framesDir);
+    const rec = new FrameRecorder(page, B.outFile, fps);
 
     for (let i = 0; i < bookingSteps.length; i++) {
       await runStep(page, rec, bookingSteps[i], i);
     }
 
     console.log(`  frames capturées : ${rec.count}`);
-    encodeFramesToMp4(B.framesDir, B.outFile, fps);
+    await rec.close();
   } finally {
     await browser.close();
   }

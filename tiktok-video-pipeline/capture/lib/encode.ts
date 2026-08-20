@@ -1,13 +1,11 @@
-import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
-import path from 'node:path';
 import { createRequire } from 'node:module';
-import { ROOT, config } from '../config.js';
+import { config } from '../config.js';
 
 const require = createRequire(import.meta.url);
 
 /** Résout un binaire ffmpeg disposant de libx264 (ffmpeg-static en priorité). */
-function resolveFfmpeg(): string {
+export function resolveFfmpeg(): string {
   const candidates: string[] = [];
   try {
     const p = require('ffmpeg-static') as string | null;
@@ -22,19 +20,17 @@ function resolveFfmpeg(): string {
 }
 
 /**
- * Assemble les frames PNG d'un dossier en un MP4 H.264 propre.
- * yuv420p + faststart = compatibilité maximale (TikTok, QuickTime, navigateurs).
+ * Arguments ffmpeg pour encoder un flux d'images (image2pipe, via stdin) en
+ * MP4 H.264 propre. yuv420p + faststart = compatibilité maximale
+ * (TikTok, QuickTime, navigateurs).
  */
-export function encodeFramesToMp4(framesDir: string, outFile: string, fps: number): void {
-  const ffmpeg = resolveFfmpeg();
-  const absFrames = path.join(ROOT, framesDir, 'frame_%05d.png');
-  const absOut = path.join(ROOT, outFile);
-  fs.mkdirSync(path.dirname(absOut), { recursive: true });
-
-  const args = [
+export function encodeArgs(outFile: string, fps: number): string[] {
+  return [
     '-y',
+    '-f', 'image2pipe',
+    '-vcodec', 'png',
     '-framerate', String(fps),
-    '-i', absFrames,
+    '-i', 'pipe:0',
     '-c:v', 'libx264',
     '-preset', 'slow',
     '-crf', String(config.encode.crf),
@@ -42,11 +38,6 @@ export function encodeFramesToMp4(framesDir: string, outFile: string, fps: numbe
     // dimensions paires obligatoires pour yuv420p
     '-vf', 'scale=trunc(iw/2)*2:trunc(ih/2)*2',
     '-movflags', '+faststart',
-    absOut,
+    outFile,
   ];
-
-  console.log(`\n[ffmpeg] ${ffmpeg} ${args.join(' ')}\n`);
-  const res = spawnSync(ffmpeg, args, { stdio: 'inherit' });
-  if (res.status !== 0) throw new Error(`ffmpeg a échoué (code ${res.status})`);
-  console.log(`✅ Écrit : ${absOut}`);
 }
