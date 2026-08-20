@@ -73,14 +73,29 @@ export type BookingStep =
   | { type: 'waitFor'; selector: string; label?: string }
   | { type: 'dwell'; sec: number; label?: string };
 
+/** Valeurs réelles du parcours (CAONABO AIRLINES) — faciles à modifier. */
+export const booking = {
+  departure: 'Cap-Haïtien',
+  arrival: 'Santiago',
+  dateAller: '2026-09-10', // 10 septembre 2026 (format à adapter au champ réel)
+  dateRetour: '2026-10-12', // 12 octobre 2026
+  passagers: 1,
+};
+
 export const bookingSteps: BookingStep[] = [
-  { type: 'dwell', sec: 1.0, label: "Accueil" },
-  { type: 'clickText', text: 'Réserver', label: 'Ouvrir la réservation' },
-  { type: 'dwell', sec: 1.2, label: 'Page réservation' },
-  { type: 'clickText', text: 'Billet', label: 'Choisir un billet' },
-  { type: 'dwell', sec: 1.0 },
-  { type: 'fill', selector: 'input[type="email"]', value: 'client@exemple.com', label: 'Saisir email' },
-  { type: 'dwell', sec: 0.8 },
-  { type: 'clickText', text: 'Confirmer', label: 'Confirmer la réservation' },
-  { type: 'dwell', sec: 1.8, label: 'Confirmation' },
+  // ── Étape 1 : ouvrir la page Réserver (lien du menu du haut) ─────────────
+  { type: 'dwell', sec: 1.2, label: 'Accueil' },
+  { type: 'clickText', text: 'Réserver', label: 'Menu → Réserver' },
+  { type: 'dwell', sec: 1.5, label: 'Page Réserver' },
+
+  // ── Étape 2+ : formulaire (destination / dates / recherche) ──────────────
+  // ⚠️ À COMPLÉTER avec la sortie de `capture/inspect.ts` sur la page Réserver.
+  // Une fois les sélecteurs connus, ça ressemblera à :
+  //   { type: 'fill',        selector: '<champ départ>',  value: booking.departure },
+  //   { type: 'fill',        selector: '<champ arrivée>', value: booking.arrival },
+  //   { type: 'fill',        selector: '<champ date aller>',  value: booking.dateAller },
+  //   { type: 'fill',        selector: '<champ date retour>', value: booking.dateRetour },
+  //   { type: 'clickText',   text: 'Rechercher', label: 'Voir les vols' },
+  //   { type: 'waitFor',     selector: '<carte vol>' },
+  //   { type: 'dwell', sec: 2.0, label: 'Vols disponibles' },
 ];
