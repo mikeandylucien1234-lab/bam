@@ -50,52 +50,121 @@ export const config = {
 } as const;
 
 /**
- * TIMELINE de la Vidéo B (tutoriel de réservation).
+ * TIMELINE de la Vidéo B — assistant de réservation CAONABO (`/book`, 5 étapes).
  *
- * ⚠️ Les sélecteurs ci-dessous sont des HYPOTHÈSES : le site n'a pas pu être
- * inspecté depuis l'environnement d'exécution (bloqué par la politique réseau).
- * Ajuste `text`/`selector` après un premier passage — chaque étape anime le
- * curseur vers sa cible puis exécute l'action, en capturant image par image.
+ * Chaque étape anime le curseur vers sa cible puis agit, en capturant image
+ * par image. Les cibles sont résolues par LIBELLÉ / RÔLE / PLACEHOLDER
+ * (robuste sur ce formulaire), pas par sélecteur CSS fragile.
+ *
+ * `Target` : comment trouver l'élément
+ *  - { by: 'label', value }        → getByLabel (champ avec libellé)
+ *  - { by: 'placeholder', value }  → getByPlaceholder
+ *  - { by: 'role', role, name }    → getByRole (bouton/lien)
+ *  - { by: 'text', value }         → getByText (sous-chaîne)
+ *  - { by: 'selector', value }     → locator CSS brut
  *
  * Types d'étape :
- *  - { type: 'scrollTo', to: 'bottom' | 'top' | number }  // number = ratio 0..1
- *  - { type: 'clickText', text: 'Réserver' }
- *  - { type: 'clickSelector', selector: 'button.book' }
- *  - { type: 'fill', selector: 'input[name=email]', value: 'test@mail.com' }
- *  - { type: 'waitFor', selector: '...' }
- *  - { type: 'dwell', sec: 1.5 }
+ *  - dwell     : pause (sec)
+ *  - scrollTo  : défilement ('top'|'bottom'|ratio 0..1)
+ *  - click     : clic sur une cible
+ *  - fill      : saisie de texte (champs date natifs : format 'AAAA-MM-JJ')
+ *  - select    : choix dans un <select> natif (par libellé d'option)
+ *  - waitFor   : attend l'apparition d'une cible
+ * `optional: true` → si la cible est absente/échoue, on continue sans planter.
  */
-export type BookingStep =
-  | { type: 'scrollTo'; to: 'bottom' | 'top' | number; label?: string }
-  | { type: 'clickText'; text: string; label?: string }
-  | { type: 'clickSelector'; selector: string; label?: string }
-  | { type: 'fill'; selector: string; value: string; label?: string }
-  | { type: 'waitFor'; selector: string; label?: string }
-  | { type: 'dwell'; sec: number; label?: string };
+export type Target =
+  | { by: 'label'; value: string }
+  | { by: 'placeholder'; value: string }
+  | { by: 'role'; role: 'button' | 'link' | 'option'; name: string }
+  | { by: 'text'; value: string }
+  | { by: 'selector'; value: string };
 
-/** Valeurs réelles du parcours (CAONABO AIRLINES) — faciles à modifier. */
-export const booking = {
-  departure: 'Cap-Haïtien',
-  arrival: 'Santiago',
-  dateAller: '2026-09-10', // 10 septembre 2026 (format à adapter au champ réel)
-  dateRetour: '2026-10-12', // 12 octobre 2026
-  passagers: 1,
+export type BookingStep =
+  | { type: 'dwell'; sec: number; label?: string }
+  | { type: 'scrollTo'; to: 'bottom' | 'top' | number; label?: string }
+  | { type: 'click'; target: Target; label?: string; optional?: boolean }
+  | { type: 'fill'; target: Target; value: string; label?: string; optional?: boolean }
+  | { type: 'select'; target: Target; value: string; label?: string; optional?: boolean }
+  | { type: 'waitFor'; target: Target; label?: string; optional?: boolean };
+
+/** Valeurs réelles du parcours (issues de tes captures) — faciles à modifier. */
+export const pax = {
+  depuis: 'Cap-Haïtien (CAP)',
+  vers: 'Santiago (SCL)',
+  dateAller: '2026-09-10', // 10 sept. 2026
+  dateRetour: '2026-10-12', // 12 oct. 2026
+  passagers: '1 passager',
+  civilite: 'M.',
+  prenom: 'JEAN',
+  nom: 'JACQUE',
+  naissance: '2000-12-11', // né le 11-12-2000
+  nationalite: 'Haïti',
+  typeDoc: 'Passeport',
+  numDoc: 'R1234567890',
+  expirationDoc: '2029-11-11', // exp. 11-11-2029
+  paysEmission: 'HAITI',
+  telPassager: '982621210',
+  email: 'EXAMPLE@gmail.com',
+  telContact: '91234567',
+  nomCarte: 'JEAN BAPTISTE',
+  numCarte: '4242 4242 4242 4242',
+  expCarte: '12/29',
+  cvc: '123',
 };
 
 export const bookingSteps: BookingStep[] = [
-  // ── Étape 1 : ouvrir la page Réserver (lien du menu du haut) ─────────────
+  // ── Accueil → menu Réserver ──────────────────────────────────────────────
   { type: 'dwell', sec: 1.2, label: 'Accueil' },
-  { type: 'clickText', text: 'Réserver', label: 'Menu → Réserver' },
-  { type: 'dwell', sec: 1.5, label: 'Page Réserver' },
+  { type: 'click', target: { by: 'role', role: 'link', name: 'Réserver' }, label: 'Menu → Réserver' },
+  { type: 'dwell', sec: 1.4, label: 'Étape 1 · Recherche' },
 
-  // ── Étape 2+ : formulaire (destination / dates / recherche) ──────────────
-  // ⚠️ À COMPLÉTER avec la sortie de `capture/inspect.ts` sur la page Réserver.
-  // Une fois les sélecteurs connus, ça ressemblera à :
-  //   { type: 'fill',        selector: '<champ départ>',  value: booking.departure },
-  //   { type: 'fill',        selector: '<champ arrivée>', value: booking.arrival },
-  //   { type: 'fill',        selector: '<champ date aller>',  value: booking.dateAller },
-  //   { type: 'fill',        selector: '<champ date retour>', value: booking.dateRetour },
-  //   { type: 'clickText',   text: 'Rechercher', label: 'Voir les vols' },
-  //   { type: 'waitFor',     selector: '<carte vol>' },
-  //   { type: 'dwell', sec: 2.0, label: 'Vols disponibles' },
+  // ── Étape 1 · Recherche (itinéraire) ─────────────────────────────────────
+  { type: 'select', target: { by: 'label', value: 'Depuis' }, value: pax.depuis, label: 'Départ' },
+  { type: 'select', target: { by: 'label', value: 'Vers' }, value: pax.vers, label: 'Arrivée' },
+  { type: 'fill', target: { by: 'label', value: 'Date aller' }, value: pax.dateAller, label: 'Date aller' },
+  { type: 'fill', target: { by: 'label', value: 'Date retour' }, value: pax.dateRetour, label: 'Date retour' },
+  { type: 'select', target: { by: 'label', value: 'Passagers' }, value: pax.passagers, optional: true },
+  { type: 'dwell', sec: 0.8 },
+  { type: 'click', target: { by: 'role', role: 'button', name: 'Suivant' }, label: '→ Vol' },
+  { type: 'dwell', sec: 1.4, label: 'Étape 2 · Vol' },
+
+  // ── Étape 2 · Choix du vol ───────────────────────────────────────────────
+  { type: 'click', target: { by: 'text', value: 'CA201' }, label: 'Choisir le vol', optional: true },
+  { type: 'dwell', sec: 1.0 },
+  { type: 'click', target: { by: 'role', role: 'button', name: 'Suivant' }, label: '→ Passagers' },
+  { type: 'dwell', sec: 1.4, label: 'Étape 3 · Passagers' },
+
+  // ── Étape 3 · Passagers et documents ─────────────────────────────────────
+  { type: 'select', target: { by: 'label', value: 'Civilité' }, value: pax.civilite, optional: true },
+  { type: 'fill', target: { by: 'label', value: 'Prénom' }, value: pax.prenom, label: 'Prénom' },
+  { type: 'fill', target: { by: 'label', value: 'Nom' }, value: pax.nom, label: 'Nom' },
+  { type: 'fill', target: { by: 'label', value: 'Date de naissance' }, value: pax.naissance, optional: true },
+  { type: 'fill', target: { by: 'label', value: 'Nationalité' }, value: pax.nationalite, optional: true },
+  { type: 'select', target: { by: 'label', value: 'Type de document' }, value: pax.typeDoc, optional: true },
+  { type: 'fill', target: { by: 'label', value: 'N° de document' }, value: pax.numDoc, label: 'N° passeport' },
+  { type: 'fill', target: { by: 'label', value: 'Expiration' }, value: pax.expirationDoc, optional: true },
+  { type: 'fill', target: { by: 'label', value: "Pays d'émission" }, value: pax.paysEmission, optional: true },
+  { type: 'fill', target: { by: 'label', value: 'Téléphone du passager' }, value: pax.telPassager, optional: true },
+  { type: 'fill', target: { by: 'label', value: 'Email de contact' }, value: pax.email, label: 'Email' },
+  { type: 'fill', target: { by: 'label', value: 'Téléphone de contact' }, value: pax.telContact, optional: true },
+  { type: 'dwell', sec: 0.8 },
+  { type: 'click', target: { by: 'role', role: 'button', name: 'Suivant' }, label: '→ Options' },
+  { type: 'dwell', sec: 1.6, label: 'Étape 4 · Options' },
+
+  // ── Étape 4 · Bagages et sièges (mise en valeur, puis suite) ─────────────
+  { type: 'scrollTo', to: 0.3, label: 'Voir les sièges' },
+  { type: 'dwell', sec: 1.4 },
+  { type: 'click', target: { by: 'role', role: 'button', name: 'Suivant' }, label: '→ Paiement' },
+  { type: 'dwell', sec: 1.4, label: 'Étape 5 · Paiement' },
+
+  // ── Étape 5 · Récapitulatif et paiement (mode démo) ──────────────────────
+  { type: 'click', target: { by: 'text', value: 'Carte bancaire' }, optional: true },
+  { type: 'fill', target: { by: 'placeholder', value: 'JEAN BAPTISTE' }, value: pax.nomCarte, label: 'Nom carte', optional: true },
+  { type: 'fill', target: { by: 'placeholder', value: '4242 4242 4242 4242' }, value: pax.numCarte, label: 'N° carte', optional: true },
+  { type: 'fill', target: { by: 'placeholder', value: 'MM/AA' }, value: pax.expCarte, optional: true },
+  { type: 'fill', target: { by: 'placeholder', value: '123' }, value: pax.cvc, optional: true },
+  { type: 'dwell', sec: 0.8 },
+  { type: 'click', target: { by: 'text', value: 'Payer' }, label: 'Payer (démo)' },
+  { type: 'waitFor', target: { by: 'text', value: 'Réservation confirmée' }, label: 'Confirmation', optional: true },
+  { type: 'dwell', sec: 2.6, label: '✅ Réservation confirmée' },
 ];
