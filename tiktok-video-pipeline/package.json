@@ -1,0 +1,19 @@
+{
+  "name": "tiktok-video-pipeline",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Pipeline: Playwright capture -> FFmpeg clean MP4 -> Remotion 3D floating mockup -> 2 TikTok MP4 (1080x1920)",
+  "scripts": {
+    "capture:a": "tsx capture/capture-a-home.ts",
+    "capture:b": "tsx capture/capture-b-booking.ts",
+    "capture:all": "npm run capture:a && npm run capture:b"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "ffmpeg-static": "^5.2.0",
+    "playwright": "^1.48.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}
