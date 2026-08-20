@@ -70,6 +70,8 @@ export const config = {
  *  - fill      : saisie de texte (champs date natifs : format 'AAAA-MM-JJ')
  *  - select    : choix dans un <select> natif (par libellé d'option)
  *  - waitFor   : attend l'apparition d'une cible
+ *  - ensureUrl : filet de sécurité — navigue vers `path` seulement si on n'y est
+ *                pas déjà (ex. si le clic sur le menu n'a pas abouti)
  * `optional: true` → si la cible est absente/échoue, on continue sans planter.
  */
 export type Target =
@@ -85,7 +87,8 @@ export type BookingStep =
   | { type: 'click'; target: Target; label?: string; optional?: boolean }
   | { type: 'fill'; target: Target; value: string; label?: string; optional?: boolean }
   | { type: 'select'; target: Target; value: string; label?: string; optional?: boolean }
-  | { type: 'waitFor'; target: Target; label?: string; optional?: boolean };
+  | { type: 'waitFor'; target: Target; label?: string; optional?: boolean }
+  | { type: 'ensureUrl'; path: string; label?: string };
 
 /** Valeurs réelles du parcours (issues de tes captures) — faciles à modifier. */
 export const pax = {
@@ -114,8 +117,14 @@ export const pax = {
 
 export const bookingSteps: BookingStep[] = [
   // ── Accueil → menu Réserver ──────────────────────────────────────────────
+  // En viewport téléphone, la nav est repliée dans un hamburger : on l'ouvre
+  // d'abord (optionnel), on clique « Réserver » (optionnel), puis `ensureUrl`
+  // garantit qu'on est bien sur /book quoi qu'il arrive.
   { type: 'dwell', sec: 1.2, label: 'Accueil' },
-  { type: 'click', target: { by: 'role', role: 'link', name: 'Réserver' }, label: 'Menu → Réserver' },
+  { type: 'click', target: { by: 'selector', value: 'button[aria-label*="enu" i], button.hamburger, header button:has(svg)' }, label: 'Ouvrir le menu ☰', optional: true },
+  { type: 'dwell', sec: 0.6 },
+  { type: 'click', target: { by: 'role', role: 'link', name: 'Réserver' }, label: 'Menu → Réserver', optional: true },
+  { type: 'ensureUrl', path: '/book', label: 'Page de réservation' },
   { type: 'dwell', sec: 1.4, label: 'Étape 1 · Recherche' },
 
   // ── Étape 1 · Recherche (itinéraire) ─────────────────────────────────────

@@ -31,6 +31,8 @@ function resolve(page: Page, t: Target): Locator {
 
 /** Amène le curseur au centre d'un élément (scroll au besoin) puis capture. */
 async function cursorTo(page: Page, rec: FrameRecorder, loc: Locator): Promise<void> {
+  // visible d'abord : en mobile, un élément replié (menu ☰) n'a pas de position
+  await loc.waitFor({ state: 'visible', timeout: 6_000 });
   await loc.scrollIntoViewIfNeeded({ timeout: 6_000 });
   const box = await loc.boundingBox();
   if (!box) throw new Error('élément sans position à l’écran');
@@ -69,6 +71,7 @@ async function runStep(page: Page, rec: FrameRecorder, step: BookingStep, i: num
       await clickRipple(page, rec, fps);
       await loc.click({ timeout: 6_000 });
       await page.waitForLoadState('networkidle', { timeout: 12_000 }).catch(() => {});
+      await initCursor(page); // si le clic a provoqué une navigation
       await rec.hold(B.dwellSec, fps);
       return;
     }
@@ -107,6 +110,16 @@ async function runStep(page: Page, rec: FrameRecorder, step: BookingStep, i: num
     case 'waitFor': {
       await resolve(page, step.target).waitFor({ timeout: 15_000 });
       await rec.hold(0.4, fps);
+      return;
+    }
+
+    case 'ensureUrl': {
+      if (page.url().includes(step.path)) return; // déjà au bon endroit
+      const target = new URL(step.path, config.baseUrl).toString();
+      console.log(`    ↪ navigation directe vers ${target}`);
+      await page.goto(target, { waitUntil: 'networkidle', timeout: 60_000 });
+      await initCursor(page); // le curseur est perdu au rechargement
+      await rec.hold(0.6, fps);
       return;
     }
   }
