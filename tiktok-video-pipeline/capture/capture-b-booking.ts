@@ -13,11 +13,73 @@ import type { Locator, Page } from 'playwright';
 const { fps } = config;
 const B = config.videoB;
 
-/** Résout une cible en locator Playwright. */
-function resolve(page: Page, t: Target): Locator {
+/**
+ * Repli « champ par libellé de proximité » : beaucoup de formulaires n'associent
+ * pas le <label> au champ (pas de for/id). On cherche donc l'élément dont le
+ * texte correspond au libellé, puis le contrôle le plus proche (à l'intérieur,
+ * juste après, ou dans le bloc parent), et on le marque pour le cibler.
+ */
+const FIND_FIELD_BY_LABEL = String.raw`
+  (labelText) => {
+    const norm = (s) => (s || '').replace(/\s+/g, ' ').trim().toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '');
+    const want = norm(labelText);
+    const isField = (el) => el && /^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName)
+      && el.type !== 'hidden';
+    const visible = (el) => {
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0;
+    };
+    document.querySelectorAll('[data-tt-target]').forEach((e) => e.removeAttribute('data-tt-target'));
+
+    // 1) <label> explicite (for=, ou champ imbriqué)
+    for (const lab of document.querySelectorAll('label')) {
+      if (!norm(lab.textContent).startsWith(want)) continue;
+      let f = null;
+      const forId = lab.getAttribute('for');
+      if (forId) f = document.getElementById(forId);
+      if (!isField(f)) f = lab.querySelector('input,select,textarea');
+      if (isField(f) && visible(f)) { f.setAttribute('data-tt-target', '1'); return true; }
+    }
+
+    // 2) n'importe quel élément portant ce texte → champ le plus proche
+    const all = Array.from(document.querySelectorAll('label,span,div,p,strong,b'));
+    for (const el of all) {
+      if (el.children.length > 2) continue;           // garder les petits porteurs de texte
+      if (!norm(el.textContent).startsWith(want)) continue;
+      let f = el.querySelector('input,select,textarea');
+      if (!isField(f)) {
+        let sib = el.nextElementSibling;
+        while (sib && !isField(f)) {
+          f = isField(sib) ? sib : sib.querySelector && sib.querySelector('input,select,textarea');
+          sib = sib.nextElementSibling;
+        }
+      }
+      if (!isField(f) && el.parentElement) {
+        f = el.parentElement.querySelector('input,select,textarea');
+      }
+      if (isField(f) && visible(f)) { f.setAttribute('data-tt-target', '1'); return true; }
+    }
+    return false;
+  }
+`;
+
+/** Résout une cible en locator Playwright (avec repli intelligent pour 'label'). */
+async function resolve(page: Page, t: Target): Promise<Locator> {
   switch (t.by) {
-    case 'label':
-      return page.getByLabel(t.value, { exact: false }).first();
+    case 'label': {
+      const direct = page.getByLabel(t.value, { exact: false }).first();
+      if (await direct.count().then((n) => n > 0).catch(() => false)) {
+        if (await direct.isVisible().catch(() => false)) return direct;
+      }
+      // appel construit dans l'expression : passer une fonction en chaîne à
+      // page.evaluate ne transmet pas l'argument.
+      const found = await page.evaluate(
+        `(${FIND_FIELD_BY_LABEL})(${JSON.stringify(t.value)})`,
+      );
+      if (found) return page.locator('[data-tt-target="1"]').first();
+      return direct; // laisse l'erreur remonter avec un message clair
+    }
     case 'placeholder':
       return page.getByPlaceholder(t.value, { exact: false }).first();
     case 'role':
@@ -27,6 +89,40 @@ function resolve(page: Page, t: Target): Locator {
     case 'selector':
       return page.locator(t.value).first();
   }
+}
+
+/** Diagnostic : liste les champs/boutons visibles de la page courante. */
+const DUMP_FIELDS = String.raw`
+  () => {
+    const out = [];
+    const vis = (el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
+    document.querySelectorAll('input,select,textarea').forEach((el) => {
+      if (!vis(el)) return;
+      let lab = '';
+      if (el.id) { const l = document.querySelector('label[for="' + CSS.escape(el.id) + '"]'); if (l) lab = l.innerText; }
+      if (!lab && el.closest('label')) lab = el.closest('label').innerText;
+      if (!lab && el.parentElement) lab = el.parentElement.innerText;
+      out.push('[' + el.tagName + (el.type ? ':' + el.type : '') + '] libellé≈"' +
+        (lab || '').replace(/\s+/g, ' ').trim().slice(0, 45) + '"' +
+        (el.name ? ' name=' + el.name : '') + (el.id ? ' id=' + el.id : '') +
+        (el.placeholder ? ' ph="' + el.placeholder + '"' : ''));
+    });
+    document.querySelectorAll('button,[role=button],a').forEach((el) => {
+      if (!vis(el)) return;
+      const t = (el.innerText || '').replace(/\s+/g, ' ').trim();
+      if (t) out.push('[' + el.tagName + '] "' + t.slice(0, 45) + '"');
+    });
+    return out;
+  }
+`;
+
+async function dumpPage(page: Page): Promise<void> {
+  try {
+    console.error(`\n🔎 Éléments visibles sur ${page.url()} :`);
+    const items = (await page.evaluate(`(${DUMP_FIELDS})()`)) as string[];
+    for (const i of items.slice(0, 60)) console.error('   ' + i);
+    console.error('');
+  } catch {}
 }
 
 /** Amène le curseur au centre d'un élément (scroll au besoin) puis capture. */
@@ -66,7 +162,7 @@ async function runStep(page: Page, rec: FrameRecorder, step: BookingStep, i: num
     }
 
     case 'click': {
-      const loc = resolve(page, step.target);
+      const loc = await resolve(page, step.target);
       await cursorTo(page, rec, loc);
       await clickRipple(page, rec, fps);
       await loc.click({ timeout: 6_000 });
@@ -77,7 +173,7 @@ async function runStep(page: Page, rec: FrameRecorder, step: BookingStep, i: num
     }
 
     case 'select': {
-      const loc = resolve(page, step.target);
+      const loc = await resolve(page, step.target);
       await cursorTo(page, rec, loc);
       await clickRipple(page, rec, fps);
       // essaie par libellé d'option, puis par valeur brute
@@ -87,7 +183,7 @@ async function runStep(page: Page, rec: FrameRecorder, step: BookingStep, i: num
     }
 
     case 'fill': {
-      const loc = resolve(page, step.target);
+      const loc = await resolve(page, step.target);
       await cursorTo(page, rec, loc);
       await clickRipple(page, rec, fps);
       await loc.click({ timeout: 6_000 }).catch(() => {});
@@ -108,7 +204,7 @@ async function runStep(page: Page, rec: FrameRecorder, step: BookingStep, i: num
     }
 
     case 'waitFor': {
-      await resolve(page, step.target).waitFor({ timeout: 15_000 });
+      await (await resolve(page, step.target)).waitFor({ timeout: 15_000 });
       await rec.hold(0.4, fps);
       return;
     }
@@ -143,6 +239,8 @@ async function main() {
           console.warn(`    ⏭️  étape optionnelle ignorée : ${err?.message ?? err}`);
           continue;
         }
+        // étape obligatoire : afficher ce que la page contient réellement
+        await dumpPage(page);
         throw err;
       }
     }
