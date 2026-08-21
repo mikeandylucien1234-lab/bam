@@ -20,12 +20,12 @@ const B = config.videoB;
  * juste après, ou dans le bloc parent), et on le marque pour le cibler.
  */
 const FIND_FIELD_BY_LABEL = String.raw`
-  (labelText) => {
+  (labelText, allowedTags) => {
     const norm = (s) => (s || '').replace(/\s+/g, ' ').trim().toLowerCase()
       .normalize('NFD').replace(/[̀-ͯ]/g, '');
     const want = norm(labelText);
-    const isField = (el) => el && /^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName)
-      && el.type !== 'hidden';
+    const allow = allowedTags && allowedTags.length ? allowedTags : ['INPUT', 'SELECT', 'TEXTAREA'];
+    const isField = (el) => el && allow.includes(el.tagName) && el.type !== 'hidden';
     const visible = (el) => {
       const r = el.getBoundingClientRect();
       return r.width > 0 && r.height > 0;
@@ -38,25 +38,26 @@ const FIND_FIELD_BY_LABEL = String.raw`
       let f = null;
       const forId = lab.getAttribute('for');
       if (forId) f = document.getElementById(forId);
-      if (!isField(f)) f = lab.querySelector('input,select,textarea');
+      if (!isField(f)) f = lab.querySelector(allow.join(','));
       if (isField(f) && visible(f)) { f.setAttribute('data-tt-target', '1'); return true; }
     }
 
-    // 2) n'importe quel élément portant ce texte → champ le plus proche
+    // 2) n'importe quel élément portant ce texte → champ le plus proche, du bon type.
+    // Portée volontairement étroite (élément lui-même, ou au plus 2 voisins
+    // suivants) : une recherche non bornée peut, sur une page « à plat »,
+    // remonter très loin et saisir SILENCIEUSEMENT la mauvaise valeur dans un
+    // champ sans rapport — pire qu'un échec visible.
     const all = Array.from(document.querySelectorAll('label,span,div,p,strong,b'));
     for (const el of all) {
       if (el.children.length > 2) continue;           // garder les petits porteurs de texte
       if (!norm(el.textContent).startsWith(want)) continue;
-      let f = el.querySelector('input,select,textarea');
-      if (!isField(f)) {
-        let sib = el.nextElementSibling;
-        while (sib && !isField(f)) {
-          f = isField(sib) ? sib : sib.querySelector && sib.querySelector('input,select,textarea');
-          sib = sib.nextElementSibling;
-        }
-      }
-      if (!isField(f) && el.parentElement) {
-        f = el.parentElement.querySelector('input,select,textarea');
+      let f = el.querySelector(allow.join(','));
+      let sib = el.nextElementSibling;
+      let hops = 0;
+      while (sib && !isField(f) && hops < 2) {
+        f = isField(sib) ? sib : (sib.querySelector && sib.querySelector(allow.join(',')));
+        sib = sib.nextElementSibling;
+        hops++;
       }
       if (isField(f) && visible(f)) { f.setAttribute('data-tt-target', '1'); return true; }
     }
@@ -65,7 +66,7 @@ const FIND_FIELD_BY_LABEL = String.raw`
 `;
 
 /** Résout une cible en locator Playwright (avec repli intelligent pour 'label'). */
-async function resolve(page: Page, t: Target): Promise<Locator> {
+async function resolve(page: Page, t: Target, allowedTags?: string[]): Promise<Locator> {
   switch (t.by) {
     case 'label': {
       const direct = page.getByLabel(t.value, { exact: false }).first();
@@ -75,7 +76,7 @@ async function resolve(page: Page, t: Target): Promise<Locator> {
       // appel construit dans l'expression : passer une fonction en chaîne à
       // page.evaluate ne transmet pas l'argument.
       const found = await page.evaluate(
-        `(${FIND_FIELD_BY_LABEL})(${JSON.stringify(t.value)})`,
+        `(${FIND_FIELD_BY_LABEL})(${JSON.stringify(t.value)}, ${JSON.stringify(allowedTags ?? null)})`,
       );
       if (found) return page.locator('[data-tt-target="1"]').first();
       return direct; // laisse l'erreur remonter avec un message clair
@@ -91,26 +92,38 @@ async function resolve(page: Page, t: Target): Promise<Locator> {
   }
 }
 
-/** Diagnostic : liste les champs/boutons visibles de la page courante. */
+/**
+ * Diagnostic : liste TOUS les champs (visibles ou non — un input caché
+ * derrière un bouton stylé est un piège classique des date-pickers) et les
+ * boutons/liens visibles. Repère aussi tout élément dont le texte contient
+ * "date" (souvent le bouton d'un calendrier personnalisé).
+ */
 const DUMP_FIELDS = String.raw`
   () => {
     const out = [];
     const vis = (el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
+    out.push('--- champs (input/select/textarea), y compris invisibles ---');
     document.querySelectorAll('input,select,textarea').forEach((el) => {
-      if (!vis(el)) return;
       let lab = '';
       if (el.id) { const l = document.querySelector('label[for="' + CSS.escape(el.id) + '"]'); if (l) lab = l.innerText; }
       if (!lab && el.closest('label')) lab = el.closest('label').innerText;
       if (!lab && el.parentElement) lab = el.parentElement.innerText;
-      out.push('[' + el.tagName + (el.type ? ':' + el.type : '') + '] libellé≈"' +
+      out.push((vis(el) ? '[visible] ' : '[CACHÉ]   ') + '[' + el.tagName + (el.type ? ':' + el.type : '') + '] libellé≈"' +
         (lab || '').replace(/\s+/g, ' ').trim().slice(0, 45) + '"' +
         (el.name ? ' name=' + el.name : '') + (el.id ? ' id=' + el.id : '') +
         (el.placeholder ? ' ph="' + el.placeholder + '"' : ''));
     });
+    out.push('--- boutons / liens visibles ---');
     document.querySelectorAll('button,[role=button],a').forEach((el) => {
       if (!vis(el)) return;
       const t = (el.innerText || '').replace(/\s+/g, ' ').trim();
       if (t) out.push('[' + el.tagName + '] "' + t.slice(0, 45) + '"');
+    });
+    out.push('--- éléments contenant "date" (calendrier personnalisé probable) ---');
+    document.querySelectorAll('button,div,span').forEach((el) => {
+      if (!vis(el) || el.children.length > 2) return;
+      const t = (el.innerText || '').replace(/\s+/g, ' ').trim();
+      if (t && /date/i.test(t) && t.length < 60) out.push('[' + el.tagName + '] "' + t + '"');
     });
     return out;
   }
@@ -118,9 +131,9 @@ const DUMP_FIELDS = String.raw`
 
 async function dumpPage(page: Page): Promise<void> {
   try {
-    console.error(`\n🔎 Éléments visibles sur ${page.url()} :`);
+    console.error(`\n🔎 Éléments sur ${page.url()} :`);
     const items = (await page.evaluate(`(${DUMP_FIELDS})()`)) as string[];
-    for (const i of items.slice(0, 60)) console.error('   ' + i);
+    for (const i of items.slice(0, 90)) console.error('   ' + i);
     console.error('');
   } catch {}
 }
@@ -173,7 +186,7 @@ async function runStep(page: Page, rec: FrameRecorder, step: BookingStep, i: num
     }
 
     case 'select': {
-      const loc = await resolve(page, step.target);
+      const loc = await resolve(page, step.target, ['SELECT']);
       await cursorTo(page, rec, loc);
       await clickRipple(page, rec, fps);
       // essaie par libellé d'option, puis par valeur brute
@@ -183,7 +196,7 @@ async function runStep(page: Page, rec: FrameRecorder, step: BookingStep, i: num
     }
 
     case 'fill': {
-      const loc = await resolve(page, step.target);
+      const loc = await resolve(page, step.target, ['INPUT', 'TEXTAREA']);
       await cursorTo(page, rec, loc);
       await clickRipple(page, rec, fps);
       await loc.click({ timeout: 6_000 }).catch(() => {});
@@ -230,31 +243,44 @@ async function main() {
 
     const rec = new FrameRecorder(page, B.outFile, fps);
 
+    // On ne s'arrête plus jamais au milieu : chaque étape en échec est
+    // journalisée avec un diagnostic de la page, puis on continue — pour que
+    // UNE SEULE exécution donne un rapport complet de tout ce qui coince,
+    // et que le MP4 aille quand même jusqu'au bout.
+    const failed: string[] = [];
+    const dumpedUrls = new Set<string>(); // 1 diagnostic par page, pas par étape
     for (let i = 0; i < bookingSteps.length; i++) {
       const step = bookingSteps[i];
+      const tag = step.label ?? step.type;
       try {
         await runStep(page, rec, step, i);
       } catch (err: any) {
-        if ('optional' in step && step.optional) {
-          console.warn(`    ⏭️  étape optionnelle ignorée : ${err?.message ?? err}`);
-          continue;
+        const isOptional = 'optional' in step && step.optional;
+        console.warn(`    ⚠️  étape ${i + 1} (${tag}) échouée${isOptional ? ' [optionnelle]' : ''} : ${err?.message ?? err}`);
+        if (!dumpedUrls.has(page.url())) {
+          dumpedUrls.add(page.url());
+          await dumpPage(page);
         }
-        // étape obligatoire : afficher ce que la page contient réellement
-        await dumpPage(page);
-        throw err;
+        failed.push(`#${i + 1} ${tag}`);
       }
     }
 
     console.log(`  frames capturées : ${rec.count}`);
     await rec.close();
+
+    if (failed.length) {
+      console.warn(`\n⚠️  ${failed.length} étape(s) ont échoué (le MP4 a quand même été produit) :`);
+      for (const f of failed) console.warn(`   - ${f}`);
+      console.warn('   Colle tout ce log (y compris les blocs 🔎) pour que les cibles soient corrigées.\n');
+    } else {
+      console.log('✅ Toutes les étapes ont réussi.');
+    }
   } finally {
     await browser.close();
   }
 }
 
 main().catch((err) => {
-  console.error('\n❌ Échec capture Vidéo B :', err?.message ?? err);
-  console.error('   Astuce : ajuste la cible de l’étape dans `bookingSteps` (capture/config.ts),');
-  console.error('   ou lance `capture/inspect.ts` sur la page /book pour voir les libellés exacts.');
+  console.error('\n❌ Échec capture Vidéo B (erreur fatale, hors étapes) :', err?.message ?? err);
   process.exit(1);
 });
